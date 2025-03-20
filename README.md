@@ -4,5 +4,5 @@ Disciples 2 Launcher and Template Updates
 #ToDo list
 
 - [ ] update interface
-- [ ] add d2quicksave
+- [x] add d2quicksave
 - [x] ability to check for mss update
