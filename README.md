@@ -6,4 +6,4 @@ Disciples 2 Launcher and Template Updates
 - [ ] update interface
 - [x] add d2quicksave
 - [x] ability to check for mss update
-- [ ] add support for MNS version
+- [x] add support for MNS version
