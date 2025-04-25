@@ -4,6 +4,7 @@ Disciples 2 Launcher and Template Updates
 #ToDo list
 
 - [ ] update interface
+- [ ] add view template readme file
 - [x] add d2quicksave
 - [x] ability to check for mss update
 - [x] add support for MNS version
