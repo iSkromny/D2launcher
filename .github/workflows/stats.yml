@@ -27,6 +27,18 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GITHUB_REPOSITORY: ${{ github.repository }}
         run: node .github/scripts/collect-stats.js
+
+      - name: List files (debug)
+        run: ls -la
+        
+      - name: Check if stats.json exists
+        run: |
+          if [ -f "stats.json" ]; then
+            echo "stats.json exists"
+          else
+            echo "stats.json NOT FOUND"
+            exit 1
+          fi
         
       - name: Commit and push stats
         run: |
