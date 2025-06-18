@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>D2Launcher Release Statistics</title>
+    <title>Статистика релизов D2Launcher</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         :root {
@@ -254,8 +254,8 @@
 </head>
 <body>
     <header>
-        <h1>D2Launcher Release Statistics</h1>
-        <p>Tracking downloads and version adoption</p>
+        <h1>Статистика релизов D2Launcher</h1>
+        <p>Отслеживание загрузок и популярности версий</p>
     </header>
 
     <main id="main-content" class="hidden">
@@ -278,18 +278,18 @@
         </div>
 
         <div class="chart-container">
-            <h2>Downloads per Release</h2>
+            <h2>Загрузки по версиям</h2>
             <div class="chart-wrapper">
                 <canvas id="releasesChart"></canvas>
             </div>
         </div>
 
         <div class="comparison-section">
-            <h2>Version Comparison</h2>
+            <h2>Сравнение версий</h2>
             <div class="version-selectors">
                 <select id="version1"></select>
                 <select id="version2"></select>
-                <button onclick="compareVersions()">Compare Versions</button>
+                <button onclick="compareVersions()">Сравнить версии</button>
             </div>
             <div id="comparison-result" class="comparison-result"></div>
         </div>
@@ -483,20 +483,47 @@
             const release2 = statsData.releases.find(r => r.tag_name === v2);
             
             if (!release1 || !release2) {
-                document.getElementById('comparison-result').innerHTML = '<p>One or both versions not found</p>';
+                document.getElementById('comparison-result').innerHTML = '<p>Одна или обе версии не найдены</p>';
                 return;
             }
             
-            // Всегда считаем v2 - новой версией, v1 - предыдущей
-            const previousVersion = release1;
-            const newVersion = release2;
+            // Функция для сравнения версий
+            const compareSemver = (a, b) => {
+                const parse = v => v.replace('v', '').split('.').map(Number);
+                const partsA = parse(a);
+                const partsB = parse(b);
+                
+                for (let i = 0; i < Math.max(partsA.length, partsB.length); i++) {
+                    const partA = partsA[i] || 0;
+                    const partB = partsB[i] || 0;
+                    if (partA > partB) return 1;
+                    if (partA < partB) return -1;
+                }
+                return 0;
+            };
             
-            const downloadsPrevious = previousVersion.downloads;
-            const downloadsNew = newVersion.downloads;
+            // Автоматически определяем новую версию
+            const comparison = compareSemver(v1, v2);
+            const isV1Newer = comparison > 0;
+            
+            const previousVersion = isV1Newer ? release2 : release1;
+            const newVersion = isV1Newer ? release1 : release2;
+            const previousTag = isV1Newer ? v2 : v1;
+            const newTag = isV1Newer ? v1 : v2;
             
             // Рассчитываем метрики
             let ratio = "N/A";
             let improvement = "N/A";
+            if (downloadsPrevious > 0) {
+                const change = downloadsNew - downloadsPrevious;
+                const percent = ((change) / downloadsPrevious * 100).toFixed(1);
+                
+                improvement = change >= 0 
+                    ? `+${percent}% (увеличено на ${change})` 
+                    : `${percent}% (уменьшено на ${Math.abs(change)})`;
+            } else if (downloadsNew > 0) {
+                improvement = `+∞% (первые загрузки)`;
+            }
             let trendClass = "";
             let changeValue = 0;
             
@@ -517,20 +544,20 @@
             document.getElementById('comparison-result').innerHTML = `
                 <div class="version-cards">
                     <div class="version-card">
-                        <h4>${v1} (Previous)</h4>
-                        <p><strong>Release Date:</strong> ${datePrevious.toLocaleDateString()}</p>
+                        <h4>${previousTag} (Предыдущая)</h4>
+                        <p><strong>Дата релиза:</strong> ${datePrevious.toLocaleDateString()}</p>
                         <div class="download-count">${downloadsPrevious}</div>
-                        <p><strong>Assets:</strong></p>
+                        <p><strong>Файлы:</strong></p>
                         <ul>
                             ${previousVersion.assets.map(a => `<li>${a.name}: ${a.downloads}</li>`).join('')}
                         </ul>
                     </div>
                     
                     <div class="version-card">
-                        <h4>${v2} (New)</h4>
-                        <p><strong>Release Date:</strong> ${dateNew.toLocaleDateString()}</p>
+                        <h4>${newTag} (Новая)</h4>
+                        <p><strong>Дата релиза:</strong> ${dateNew.toLocaleDateString()}</p>
                         <div class="download-count">${downloadsNew}</div>
-                        <p><strong>Assets:</strong></p>
+                        <p><strong>Файлы:</strong></p>
                         <ul>
                             ${newVersion.assets.map(a => `<li>${a.name}: ${a.downloads}</li>`).join('')}
                         </ul>
@@ -538,36 +565,36 @@
                 </div>
                 
                 <div class="comparison-metrics">
-                    <h3>Version Comparison: ${v1} → ${v2}</h3>
+                    <h3>Сравнение версий: ${previousTag} → ${newTag}</h3>
                     
                     <div class="metrics-explained">
                         <div class="metric-explanation">
-                            <h4>Popularity Ratio</h4>
-                            <p>Shows how many times the new version is more popular than the previous one.</p>
+                            <h4>Коэффициент популярности</h4>
+                            <p>Во сколько раз новая версия популярнее предыдущей</p>
                             <div class="metric-value ${trendClass}">${ratio}</div>
                         </div>
                         
                         <div class="metric-explanation">
-                            <h4>Download Difference</h4>
-                            <p>Absolute difference in downloads between versions.</p>
-                            <div class="metric-value ${trendClass}">${downloadsNew - downloadsPrevious}</div>
+                            <h4>Разница в загрузках</h4>
+                            <p>Абсолютная разница между версиями</p>
+                            <div class="metric-value ${trendClass}">${Math.abs(downloadsNew - downloadsPrevious)}</div>
                         </div>
                         
                         <div class="metric-explanation">
-                            <h4>Change</h4>
-                            <p>Percentage change from previous to new version.</p>
+                            <h4>Изменение</h4>
+                            <p>Процентное изменение от предыдущей версии</p>
                             <div class="metric-value ${trendClass}">${improvement}</div>
                         </div>
                         
                         <div class="metric-explanation">
-                            <h4>Days Between Releases</h4>
-                            <p>Time passed between the releases.</p>
-                            <div class="metric-value">${daysDiff} days</div>
+                            <h4>Дней между релизами</h4>
+                            <p>Время между выпуском версий</p>
+                            <div class="metric-value">${daysDiff} дней</div>
                         </div>
                     </div>
                     
                     <div class="conclusion">
-                        <h4>Interpretation:</h4>
+                        <h4>Интерпретация:</h4>
                         <p>${getComparisonConclusion(downloadsPrevious, downloadsNew, daysDiff, changeValue)}</p>
                     </div>
                 </div>
@@ -575,28 +602,30 @@
         }
         function getComparisonConclusion(prevDownloads, newDownloads, days, change) {
             if (prevDownloads === 0 && newDownloads === 0) {
-                return "У обеих версий ноль загрузок — недостаточно данных для сравнения.";
+                return "Обе версии имеют нулевые загрузки - недостаточно данных для сравнения";
             }
             
             if (prevDownloads === 0) {
-                return "У предыдущей версии ноль загрузок — темпы роста бесконечны!";
+                return "Предыдущая версия не имеет загрузок - отличный старт для новой версии!";
             }
             
             if (newDownloads === 0) {
-                return "У новой версии ноль загрузок — рассмотрите возможность изучения проблем с выпуском.";
+                return "Новая версия пока не имеет загрузок - рекомендуется проверить распространение";
             }
             
-            if (change > 50) {
-                return "Новая версия гораздо популярнее по сравнению с предыдущей версией! Фантастика!";
+            const ratio = (newDownloads / prevDownloads).toFixed(1);
+            
+            if (change > 100) {
+                return `Новая версия значительно популярнее! Скачивают в ${ratio} раз чаще`;
             }
             else if (change > 0) {
-                return "Новая версия набирает рост по сравнению с предыдущей версией. Дайте время!";
+                return "Новая версия набирает популярность";
             }
             else if (change === 0) {
-                return "У обеих версий схожее количество загрузок. Ну и кто тут лучше?";
+                return "Версии имеют одинаковую популярность";
             }
             else {
-                return "Новую версию меньше принимают, чем предыдущую. Интересно, почему?";
+                return "Новая версия пока отстаёт по загрузкам - рекомендуется провести анализ";
             }
         }
     </script>
