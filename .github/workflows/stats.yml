@@ -1,0 +1,37 @@
+name: Collect Release Stats
+
+on:
+  schedule:
+    - cron: '0 0 * * *' # Запускать каждый день в полночь по UTC
+  workflow_dispatch: # Разрешить ручной запуск
+  release:
+    types: [published] # Запускать при новом релизе
+
+jobs:
+  collect-stats:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+        
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '16'
+          
+      - name: Install dependencies
+        run: npm install @octokit/rest
+        
+      - name: Run stats collector
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
+        run: node .github/scripts/collect-stats.js
+        
+      - name: Commit and push stats
+        run: |
+          git config user.name "github-actions"
+          git config user.email "actions@github.com"
+          git add stats.json
+          git commit -m "Update release statistics"
+          git push
