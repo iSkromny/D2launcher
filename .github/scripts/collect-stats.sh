@@ -82,6 +82,23 @@ for i in $(seq 0 $(($(echo "$releases" | jq 'length') - 1))); do
          .releases += [$release_stats]')
 done
 
+# Сбор ежедневной статистики скачиваний
+echo "Сбор ежедневной статистики..."
+daily_downloads=$(echo "$releases_json" | jq '
+    [.[] | {
+        date: (.created_at | split("T")[0]),
+        downloads: (.assets | map(.download_count) | add)
+    }] | group_by(.date) | map({
+        date: .[0].date,
+        downloads: map(.downloads) | add
+    }) | sort_by(.date) | reverse
+')
+
+# Добавление daily_downloads в итоговую статистику
+stats=$(echo "$stats" | jq \
+    --argjson daily_downloads "$daily_downloads" \
+    '. + {daily_downloads: $daily_downloads}')
+
 # Сохранение результатов
 echo "$stats" | jq '.' > stats.json
 echo "Statistics saved to stats.json"
