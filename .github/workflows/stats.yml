@@ -13,37 +13,20 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
-        with:
-          fetch-depth: 0 # Полная история коммитов
-          
-      - name: Setup Node.js
-        uses: actions/setup-node@v3
-        with:
-          node-version: '18'
-          cache: 'npm'
-          
-      - name: Install dependencies
-        run: npm install @octokit/rest
         
       - name: Run stats collector
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GITHUB_REPOSITORY: ${{ github.repository }}
-        run: node .github/scripts/collect-stats.js
-        
+        run: |
+          chmod +x .github/scripts/collect-stats.sh
+          .github/scripts/collect-stats.sh
+          
       - name: Verify stats.json
         run: |
-          echo "Current directory: $(pwd)"
-          ls -la
-          
-          if [ -f "stats.json" ]; then
-            echo "stats.json content:"
-            cat stats.json
-            echo "File exists and has content"
-          else
-            echo "ERROR: stats.json not created!"
-            exit 1
-          fi
+          echo "Generated stats.json:"
+          cat stats.json
+          [ -f "stats.json" ] || exit 1
           
       - name: Commit and push stats
         run: |
@@ -51,5 +34,5 @@ jobs:
           git config --global user.email "actions@github.com"
           
           git add stats.json
-          git commit -m "Update release statistics [skip ci]"
+          git commit -m "Update release statistics"
           git push
