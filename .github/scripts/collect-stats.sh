@@ -1,6 +1,6 @@
 #!/bin/bash
 
-set -e  # Прерывать выполнение при любой ошибке
+set -e
 
 # Установка необходимых инструментов
 sudo apt-get update
@@ -32,22 +32,23 @@ stats=$(jq -n \
     }')
 
 # Обработка каждого релиза
-for row in $(echo "$releases" | jq -r '.[] | @base64'); do
-    release_json=$(echo "$row" | base64 --decode)
+for i in $(seq 0 $(($(echo "$releases" | jq 'length') - 1))); do
+    release_json=$(echo "$releases" | jq -c ".[$i]")
     tag_name=$(echo "$release_json" | jq -r '.tag_name')
     release_id=$(echo "$release_json" | jq -r '.id')
     
     echo "Processing release: $tag_name"
     
-    # Получение ассетов для релиза
-    assets=$(gh api "repos/$owner/$repo/releases/$release_id/assets" | jq -c '.')
+    # Получение ассетов для релиза (с обработкой ошибок)
+    assets=$(gh api "repos/$owner/$repo/releases/$release_id/assets" 2>/dev/null || echo '[]' | jq -c '.')
     
     release_stats=$(jq -n \
         --arg tag_name "$tag_name" \
         --arg created_at "$(echo "$release_json" | jq -r '.created_at')" \
+        --argjson release_id "$release_id" \
         --argjson assets "$assets" \
         '{
-            id: '$release_id',
+            id: $release_id,
             tag_name: $tag_name,
             created_at: $created_at,
             downloads: 0,
@@ -55,8 +56,8 @@ for row in $(echo "$releases" | jq -r '.[] | @base64'); do
         }')
     
     # Обработка ассетов
-    for asset_row in $(echo "$assets" | jq -r '.[] | @base64'); do
-        asset_json=$(echo "$asset_row" | base64 --decode)
+    for j in $(seq 0 $(($(echo "$assets" | jq 'length') - 1))); do
+        asset_json=$(echo "$assets" | jq -c ".[$j]")
         name=$(echo "$asset_json" | jq -r '.name')
         downloads=$(echo "$asset_json" | jq -r '.download_count')
         
