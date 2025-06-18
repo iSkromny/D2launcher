@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ru">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -250,6 +250,21 @@
             margin-top: 0;
             color: #2c3e50;
         }
+        
+        .comparison-direction {
+            font-style: italic;
+            color: #666;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 1px dashed #eee;
+        }
+        
+        .same-version {
+            text-align: center;
+            font-weight: bold;
+            color: var(--primary);
+            margin: 20px 0;
+        }
     </style>
 </head>
 <body>
@@ -296,7 +311,7 @@
     </main>
 
     <div id="loading">
-        <p>Loading release statistics...</p>
+        <p>Загрузка статистики релизов...</p>
     </div>
 
     <script>
@@ -315,7 +330,7 @@
             fetch('https://raw.githubusercontent.com/iSkromny/D2launcher/main/stats.json')
                 .then(response => {
                     if (!response.ok) {
-                        throw new Error(`HTTP error! status: ${response.status}`);
+                        throw new Error(`Ошибка HTTP! статус: ${response.status}`);
                     }
                     return response.json();
                 })
@@ -330,11 +345,11 @@
                 .catch(error => {
                     document.getElementById('loading').innerHTML = `
                         <div class="error">
-                            <h2>Error Loading Stats</h2>
+                            <h2>Ошибка загрузки статистики</h2>
                             <p>${error.message}</p>
-                            <p>Please try again later or check the repository status.</p>
+                            <p>Пожалуйста, попробуйте позже или проверьте статус репозитория.</p>
                         </div>`;
-                    console.error('Fetch error:', error);
+                    console.error('Ошибка загрузки:', error);
                 });
         }
         
@@ -370,10 +385,12 @@
         function renderChart(data) {
             const ctx = document.getElementById('releasesChart').getContext('2d');
             
+            // Destroy previous chart if exists
             if (releasesChart) {
                 releasesChart.destroy();
             }
             
+            // Prepare chart data
             const labels = data.releases.map(r => r.tag_name);
             const downloads = data.releases.map(r => r.downloads);
             
@@ -435,14 +452,44 @@
                 select1.appendChild(option.cloneNode(true));
                 select2.appendChild(option);
             });
-
+            
+            // Автовыбор: последняя версия vs предыдущая стабильная
             if (data.releases.length >= 2) {
-                // Устанавливаем значения напрямую
-                select1.value = data.releases[1].tag_name; // Предыдущая версия
-                select2.value = data.releases[0].tag_name; // Последняя версия
+                select1.selectedIndex = 1; // Предпоследняя версия
+                select2.selectedIndex = 0; // Последняя версия
+            }
+            
+            // Предотвращаем выбор одинаковых версий
+            select1.addEventListener('change', preventSameVersionSelection);
+            select2.addEventListener('change', preventSameVersionSelection);
+        }
+        
+        function preventSameVersionSelection() {
+            const select1 = document.getElementById('version1');
+            const select2 = document.getElementById('version2');
+            
+            if (select1.value === select2.value) {
+                // Находим альтернативную версию
+                const otherOptions = [...select2.options].filter(opt => opt.value !== select1.value);
+                if (otherOptions.length > 0) {
+                    select2.value = otherOptions[0].value;
+                }
             }
         }
-           
+        
+        function compareSemver(a, b) {
+            const parse = v => v.replace('v', '').split('.').map(Number);
+            const partsA = parse(a);
+            const partsB = parse(b);
+            
+            for (let i = 0; i < Math.max(partsA.length, partsB.length); i++) {
+                const partA = partsA[i] || 0;
+                const partB = partsB[i] || 0;
+                if (partA > partB) return 1;
+                if (partA < partB) return -1;
+            }
+            return 0;
+        }
         
         function compareVersions() {
             if (!statsData) return;
@@ -458,50 +505,41 @@
                 return;
             }
             
-            // Функция для сравнения версий
-            const compareSemver = (a, b) => {
-                const parse = v => v.replace('v', '').split('.').map(Number);
-                const partsA = parse(a);
-                const partsB = parse(b);
-                
-                for (let i = 0; i < Math.max(partsA.length, partsB.length); i++) {
-                    const partA = partsA[i] || 0;
-                    const partB = partsB[i] || 0;
-                    if (partA > partB) return 1;
-                    if (partA < partB) return -1;
-                }
-                return 0;
-            };
+            // Проверка на одинаковые версии
+            if (v1 === v2) {
+                renderSameVersionComparison(release1);
+                return;
+            }
             
-            // Автоматически определяем новую версию
+            // Автоматически определяем порядок версий
             const comparison = compareSemver(v1, v2);
             const isV1Newer = comparison > 0;
             
-            const previousVersion = isV1Newer ? release2 : release1;
-            const newVersion = isV1Newer ? release1 : release2;
-            const previousTag = isV1Newer ? v2 : v1;
-            const newTag = isV1Newer ? v1 : v2;
+            const earlierVersion = isV1Newer ? release2 : release1;
+            const newerVersion = isV1Newer ? release1 : release2;
+            const earlierTag = isV1Newer ? v2 : v1;
+            const newerTag = isV1Newer ? v1 : v2;
             
             // Рассчитываем метрики
-            const downloadsPrevious = previousVersion.downloads;
-            const downloadsNew = newVersion.downloads;
+            const downloadsEarlier = earlierVersion.downloads;
+            const downloadsNewer = newerVersion.downloads;
             
             let ratio = "N/A";
             let improvement = "N/A";
             let trendClass = "";
             let changeValue = 0;
             
-            if (downloadsPrevious > 0) {
-                ratio = (downloadsNew / downloadsPrevious).toFixed(2);
-                changeValue = ((downloadsNew - downloadsPrevious) / downloadsPrevious * 100);
+            if (downloadsEarlier > 0) {
+                ratio = (downloadsNewer / downloadsEarlier).toFixed(2);
+                changeValue = ((downloadsNewer - downloadsEarlier) / downloadsEarlier * 100);
                 
-                const change = downloadsNew - downloadsPrevious;
+                const change = downloadsNewer - downloadsEarlier;
                 improvement = change >= 0 
                     ? `+${changeValue.toFixed(1)}% (увеличено на ${change})` 
                     : `${changeValue.toFixed(1)}% (уменьшено на ${Math.abs(change)})`;
                 
                 trendClass = changeValue >= 0 ? "trend-up" : "trend-down";
-            } else if (downloadsNew > 0) {
+            } else if (downloadsNewer > 0) {
                 ratio = "∞";
                 improvement = "+∞% (первые загрузки)";
                 trendClass = "trend-up";
@@ -509,37 +547,40 @@
             }
             
             // Рассчитываем дни между релизами
-            const datePrevious = new Date(previousVersion.created_at);
-            const dateNew = new Date(newVersion.created_at);
-            const timeDiff = Math.abs(dateNew - datePrevious);
+            const dateEarlier = new Date(earlierVersion.created_at);
+            const dateNewer = new Date(newerVersion.created_at);
+            const timeDiff = Math.abs(dateNewer - dateEarlier);
             const daysDiff = Math.ceil(timeDiff / (1000 * 60 * 60 * 24));
             
             // Форматируем результат
             document.getElementById('comparison-result').innerHTML = `
                 <div class="version-cards">
                     <div class="version-card">
-                        <h4>${previousTag} (Предыдущая)</h4>
-                        <p><strong>Дата релиза:</strong> ${datePrevious.toLocaleDateString()}</p>
-                        <div class="download-count">${downloadsPrevious}</div>
+                        <h4>${earlierTag} (Более ранняя)</h4>
+                        <p><strong>Дата релиза:</strong> ${dateEarlier.toLocaleDateString()}</p>
+                        <div class="download-count">${downloadsEarlier}</div>
                         <p><strong>Файлы:</strong></p>
                         <ul>
-                            ${previousVersion.assets.map(a => `<li>${a.name}: ${a.downloads}</li>`).join('')}
+                            ${earlierVersion.assets.map(a => `<li>${a.name}: ${a.downloads}</li>`).join('')}
                         </ul>
                     </div>
                     
                     <div class="version-card">
-                        <h4>${newTag} (Новая)</h4>
-                        <p><strong>Дата релиза:</strong> ${dateNew.toLocaleDateString()}</p>
-                        <div class="download-count">${downloadsNew}</div>
+                        <h4>${newerTag} (Более новая)</h4>
+                        <p><strong>Дата релиза:</strong> ${dateNewer.toLocaleDateString()}</p>
+                        <div class="download-count">${downloadsNewer}</div>
                         <p><strong>Файлы:</strong></p>
                         <ul>
-                            ${newVersion.assets.map(a => `<li>${a.name}: ${a.downloads}</li>`).join('')}
+                            ${newerVersion.assets.map(a => `<li>${a.name}: ${a.downloads}</li>`).join('')}
                         </ul>
                     </div>
                 </div>
                 
                 <div class="comparison-metrics">
-                    <h3>Сравнение версий: ${previousTag} → ${newTag}</h3>
+                    <h3>Сравнение версий: ${earlierTag} → ${newerTag}</h3>
+                    <p class="comparison-direction">
+                        Сравнение более ранней версии (${earlierTag}) с более новой (${newerTag})
+                    </p>
                     
                     <div class="metrics-explained">
                         <div class="metric-explanation">
@@ -551,7 +592,7 @@
                         <div class="metric-explanation">
                             <h4>Разница в загрузках</h4>
                             <p>Абсолютная разница между версиями</p>
-                            <div class="metric-value ${trendClass}">${Math.abs(downloadsNew - downloadsPrevious)}</div>
+                            <div class="metric-value ${trendClass}">${Math.abs(downloadsNewer - downloadsEarlier)}</div>
                         </div>
                         
                         <div class="metric-explanation">
@@ -569,37 +610,68 @@
                     
                     <div class="conclusion">
                         <h4>Интерпретация:</h4>
-                        <p>${getComparisonConclusion(downloadsPrevious, downloadsNew, daysDiff, changeValue)}</p>
+                        <p>${getComparisonConclusion(downloadsEarlier, downloadsNewer, daysDiff, changeValue)}</p>
                     </div>
                 </div>
             `;
         }
+        
+        function renderSameVersionComparison(release) {
+            const date = new Date(release.created_at).toLocaleDateString();
+            
+            document.getElementById('comparison-result').innerHTML = `
+                <div class="same-version">
+                    Вы выбрали для сравнения одну и ту же версию
+                </div>
+                
+                <div class="version-cards">
+                    <div class="version-card" style="grid-column: 1/-1; text-align: center;">
+                        <h4>${release.tag_name}</h4>
+                        <p><strong>Дата релиза:</strong> ${date}</p>
+                        <div class="download-count">${release.downloads}</div>
+                        <p><strong>Файлы:</strong></p>
+                        <ul>
+                            ${release.assets.map(a => `<li>${a.name}: ${a.downloads}</li>`).join('')}
+                        </ul>
+                    </div>
+                </div>
+                
+                <div class="comparison-metrics">
+                    <h3>Сравнение одинаковых версий</h3>
+                    <div class="conclusion">
+                        <p>Вы выбрали для сравнения одну и ту же версию. Невозможно сравнить версию с собой.</p>
+                        <p>Пожалуйста, выберите разные версии для сравнения.</p>
+                    </div>
+                </div>
+            `;
+        }
+        
         function getComparisonConclusion(prevDownloads, newDownloads, days, change) {
             if (prevDownloads === 0 && newDownloads === 0) {
                 return "Обе версии имеют нулевые загрузки - недостаточно данных для сравнения";
             }
             
             if (prevDownloads === 0) {
-                return "Предыдущая версия не имеет загрузок - отличный старт для новой версии!";
+                return "Более ранняя версия не имеет загрузок - отличный старт для новой версии!";
             }
             
             if (newDownloads === 0) {
-                return "Новая версия пока не имеет загрузок - рекомендуется проверить распространение";
+                return "Более новая версия пока не имеет загрузок - рекомендуется проверить распространение";
             }
             
             const ratio = (newDownloads / prevDownloads).toFixed(1);
             
             if (change > 100) {
-                return `Новая версия значительно популярнее! Скачивают в ${ratio} раз чаще`;
+                return `Более новая версия значительно популярнее! Скачивают в ${ratio} раз чаще`;
             }
             else if (change > 0) {
-                return "Новая версия набирает популярность";
+                return "Более новая версия набирает популярность";
             }
             else if (change === 0) {
                 return "Версии имеют одинаковую популярность";
             }
             else {
-                return "Новая версия пока отстаёт по загрузкам - рекомендуется провести анализ";
+                return "Более новая версия пока отстаёт по загрузкам - рекомендуется провести анализ";
             }
         }
     </script>
