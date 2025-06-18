@@ -22,12 +22,6 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GITHUB_REPOSITORY: ${{ github.repository }}
         run: |
-          # Проверяем существование скрипта
-          if [ ! -f ".github/scripts/collect-stats.sh" ]; then
-            echo "Error: Script not found at .github/scripts/collect-stats.sh"
-            exit 1
-          fi
-          
           # Убедимся, что скрипт исполняемый
           chmod +x .github/scripts/collect-stats.sh
           
@@ -35,8 +29,9 @@ jobs:
           .github/scripts/collect-stats.sh
           
           # Проверяем результат
-          cat stats.json
-          cat historical_data.json
+          ls -la
+          cat stats.json | jq . | head -n 10
+          cat historical_data.json | jq . | head -n 5
 
       - name: Verify files
         run: |
