@@ -262,15 +262,15 @@
         <div id="stats-container">
             <div class="summary-cards">
                 <div class="card">
-                    <h3>Total Releases</h3>
+                    <h3>Всего релизов</h3>
                     <p class="value" id="total-releases">-</p>
                 </div>
                 <div class="card">
-                    <h3>Total Downloads</h3>
+                    <h3>Всего загрузок</h3>
                     <p class="value" id="total-downloads">-</p>
                 </div>
                 <div class="card">
-                    <h3>Last Updated</h3>
+                    <h3>Последнее обновление</h3>
                     <p class="value" id="last-updated">-</p>
                     <span id="freshness-indicator" class="freshness"></span>
                 </div>
@@ -360,9 +360,9 @@
             const now = new Date();
             const hoursDiff = Math.abs(now - updatedDate) / 36e5;
             
-            let freshness = "🟢 Fresh";
-            if (hoursDiff > 24) freshness = "🟡 Stale (updated >24h ago)";
-            if (hoursDiff > 72) freshness = "🔴 Outdated (updated >72h ago)";
+            let freshness = "🟢 Актуальные";
+            if (hoursDiff > 24) freshness = "🟡 Устаревают (обновлено >24ч назад)";
+            if (hoursDiff > 72) freshness = "🔴 Устарели (обновлено >72ч назад)";
             
             document.getElementById('freshness-indicator').textContent = freshness;
         }
