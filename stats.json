@@ -1,0 +1,33 @@
+{
+  "updated_at": "2025-06-18T08:10:28Z",
+  "total_releases": 2,
+  "total_downloads": 16,
+  "releases": [
+    {
+      "id": 225356825,
+      "tag_name": "v1.2.0.0",
+      "created_at": "2025-06-14T20:22:06Z",
+      "downloads": 16,
+      "assets": [
+        {
+          "name": "D2launcher.exe",
+          "downloads": 16,
+          "content_type": "application/x-msdownload"
+        }
+      ]
+    },
+    {
+      "id": 223573855,
+      "tag_name": "v1.1.2.0",
+      "created_at": "2025-04-30T05:24:36Z",
+      "downloads": 0,
+      "assets": [
+        {
+          "name": "D2launcher.exe",
+          "downloads": 0,
+          "content_type": "application/x-msdownload"
+        }
+      ]
+    }
+  ]
+}
