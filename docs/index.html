@@ -6,12 +6,10 @@
     <title>D2Launcher Release Statistics</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
-        :root {
-            --primary: #3498db;
-            --secondary: #2ecc71;
-            --danger: #e74c3c;
-            --light: #f8f9fa;
-            --dark: #343a40;
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
         }
         
         body {
@@ -32,7 +30,7 @@
         }
         
         h1 {
-            color: var(--dark);
+            color: #2c3e50;
             margin-bottom: 10px;
         }
         
@@ -47,58 +45,47 @@
             background: white;
             border-radius: 10px;
             padding: 20px;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
             text-align: center;
-            transition: transform 0.3s ease;
-        }
-        
-        .card:hover {
-            transform: translateY(-5px);
         }
         
         .card h3 {
             margin-top: 0;
-            color: var(--dark);
+            color: #2c3e50;
             font-size: 1.1rem;
+            margin-bottom: 10px;
         }
         
-        .card p {
-            font-size: 1.8rem;
+        .card p.value {
+            font-size: 2rem;
             font-weight: bold;
             margin: 10px 0;
-            color: var(--primary);
-        }
-        
-        .card .freshness {
-            font-size: 0.9rem;
-            font-weight: normal;
-            display: inline-block;
-            padding: 3px 8px;
-            border-radius: 12px;
-            background: #e1f5fe;
-            color: #0288d1;
+            color: #3498db;
         }
         
         .chart-container {
             background: white;
             border-radius: 10px;
             padding: 20px;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
             margin-bottom: 30px;
+            height: 400px; /* Фиксированная высота */
+            position: relative; /* Для корректного позиционирования canvas */
         }
         
         .chart-container h2 {
             margin-top: 0;
-            color: var(--dark);
+            color: #2c3e50;
             padding-bottom: 10px;
             border-bottom: 1px solid #eee;
+            margin-bottom: 20px;
         }
         
         .comparison-section {
             background: white;
             border-radius: 10px;
             padding: 20px;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
         }
         
         .version-selectors {
@@ -115,10 +102,11 @@
             border: 1px solid #ddd;
             border-radius: 5px;
             font-size: 1rem;
+            background: white;
         }
         
         button {
-            background: var(--primary);
+            background: #3498db;
             color: white;
             border: none;
             padding: 10px 20px;
@@ -149,27 +137,28 @@
         .version-card {
             padding: 15px;
             border-radius: 8px;
-            background: var(--light);
-            border-left: 4px solid var(--primary);
+            background: #f8f9fa;
+            border-left: 4px solid #3498db;
         }
         
         .version-card h4 {
             margin-top: 0;
-            color: var(--dark);
+            color: #2c3e50;
+            margin-bottom: 10px;
         }
         
         .download-count {
-            font-size: 1.5rem;
+            font-size: 1.8rem;
             font-weight: bold;
             margin: 10px 0;
-            color: var(--primary);
+            color: #3498db;
         }
         
         .comparison-metrics {
             background: #e9f7fe;
             padding: 15px;
             border-radius: 8px;
-            border-left: 4px solid var(--primary);
+            border-left: 4px solid #3498db;
         }
         
         .metrics-grid {
@@ -195,49 +184,15 @@
         }
         
         .trend-up {
-            color: var(--secondary);
+            color: #27ae60;
         }
         
         .trend-down {
-            color: var(--danger);
-        }
-        
-        #loading {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(255, 255, 255, 0.9);
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            z-index: 1000;
-        }
-        
-        .spinner {
-            border: 5px solid #f3f3f3;
-            border-top: 5px solid var(--primary);
-            border-radius: 50%;
-            width: 50px;
-            height: 50px;
-            animation: spin 1s linear infinite;
-            margin-top: 20px;
-        }
-        
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
+            color: #e74c3c;
         }
     </style>
 </head>
 <body>
-    <div id="loading">
-        <p>Loading release statistics...</p>
-        <div class="spinner"></div>
-    </div>
-
     <header>
         <h1>D2Launcher Release Statistics</h1>
         <p>Tracking downloads and version adoption</p>
@@ -245,7 +200,20 @@
 
     <main>
         <div id="stats-container">
-            <p>Loading summary data...</p>
+            <div class="summary-cards">
+                <div class="card">
+                    <h3>Total Releases</h3>
+                    <p class="value" id="total-releases">-</p>
+                </div>
+                <div class="card">
+                    <h3>Total Downloads</h3>
+                    <p class="value" id="total-downloads">-</p>
+                </div>
+                <div class="card">
+                    <h3>Last Updated</h3>
+                    <p id="last-updated">-</p>
+                </div>
+            </div>
         </div>
 
         <div class="chart-container">
@@ -269,26 +237,8 @@
         let statsData = null;
         let releasesChart = null;
         
-        // Show loading animation
-        document.getElementById('loading').style.display = 'flex';
-        
-        // Check for cached data first
-        const cachedData = localStorage.getItem('d2launcher_stats');
-        const lastFetchTime = localStorage.getItem('d2launcher_last_fetch');
-        const cacheDuration = 30 * 60 * 1000; // 30 minutes cache
-        
-        if (cachedData && lastFetchTime && (Date.now() - parseInt(lastFetchTime)) < cacheDuration) {
-            try {
-                statsData = JSON.parse(cachedData);
-                processData(statsData);
-                document.getElementById('loading').style.display = 'none';
-            } catch (e) {
-                console.error('Error parsing cached data', e);
-                fetchData();
-            }
-        } else {
-            fetchData();
-        }
+        // Initialize
+        fetchData();
         
         function fetchData() {
             fetch('https://raw.githubusercontent.com/iSkromny/D2launcher/main/stats.json')
@@ -300,16 +250,9 @@
                 })
                 .then(data => {
                     statsData = data;
-                    
-                    // Cache the data
-                    localStorage.setItem('d2launcher_stats', JSON.stringify(data));
-                    localStorage.setItem('d2launcher_last_fetch', Date.now().toString());
-                    
                     processData(data);
-                    document.getElementById('loading').style.display = 'none';
                 })
                 .catch(error => {
-                    document.getElementById('loading').style.display = 'none';
                     document.getElementById('stats-container').innerHTML = `
                         <div class="error">
                             <h2>Error Loading Stats</h2>
@@ -327,35 +270,14 @@
             
             // Auto-compare the two latest versions
             if (data.releases && data.releases.length >= 2) {
-                setTimeout(compareVersions, 500);
+                setTimeout(compareVersions, 100);
             }
         }
         
         function renderStats(data) {
-            const now = new Date();
-            const updated = new Date(data.updated_at);
-            const hoursDiff = Math.abs(now - updated) / 36e5;
-            
-            let freshness = "🟢 Fresh";
-            if (hoursDiff > 24) freshness = "🟡 Stale (updated >24h ago)";
-            if (hoursDiff > 72) freshness = "🔴 Outdated (updated >72h ago)";
-            
-            document.getElementById('stats-container').innerHTML = `
-                <div class="summary-cards">
-                    <div class="card">
-                        <h3>Total Releases</h3>
-                        <p>${data.total_releases}</p>
-                    </div>
-                    <div class="card">
-                        <h3>Total Downloads</h3>
-                        <p>${data.total_downloads}</p>
-                    </div>
-                    <div class="card">
-                        <h3>Last Updated</h3>
-                        <p>${new Date(data.updated_at).toLocaleString()}</p>
-                        <span class="freshness">${freshness}</span>
-                    </div>
-                </div>`;
+            document.getElementById('total-releases').textContent = data.total_releases;
+            document.getElementById('total-downloads').textContent = data.total_downloads;
+            document.getElementById('last-updated').textContent = new Date(data.updated_at).toLocaleString();
         }
         
         function renderChart(data) {
@@ -366,19 +288,19 @@
                 releasesChart.destroy();
             }
             
+            // Prepare chart data
+            const labels = data.releases.map(r => r.tag_name);
+            const downloads = data.releases.map(r => r.downloads);
+            
             releasesChart = new Chart(ctx, {
                 type: 'bar',
                 data: {
-                    labels: data.releases.map(r => r.tag_name),
+                    labels: labels,
                     datasets: [{
-                        label: 'Downloads per Version',
-                        data: data.releases.map(r => r.downloads),
-                        backgroundColor: data.releases.map((r, i) => 
-                            i === data.releases.length - 1 ? 'rgba(46, 204, 113, 0.7)' : 'rgba(52, 152, 219, 0.7)'
-                        ),
-                        borderColor: data.releases.map((r, i) => 
-                            i === data.releases.length - 1 ? 'rgba(46, 204, 113, 1)' : 'rgba(52, 152, 219, 1)'
-                        ),
+                        label: 'Downloads',
+                        data: downloads,
+                        backgroundColor: 'rgba(52, 152, 219, 0.7)',
+                        borderColor: 'rgba(52, 152, 219, 1)',
                         borderWidth: 1
                     }]
                 },
@@ -388,16 +310,6 @@
                     plugins: {
                         legend: {
                             display: false
-                        },
-                        tooltip: {
-                            callbacks: {
-                                afterBody: function(context) {
-                                    const index = context[0].dataIndex;
-                                    const release = data.releases[index];
-                                    const date = new Date(release.created_at).toLocaleDateString();
-                                    return `Released: ${date}`;
-                                }
-                            }
                         }
                     },
                     scales: {
