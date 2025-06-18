@@ -575,28 +575,28 @@
         }
         function getComparisonConclusion(prevDownloads, newDownloads, days, change) {
             if (prevDownloads === 0 && newDownloads === 0) {
-                return "Both versions have zero downloads - insufficient data for comparison.";
+                return "У обеих версий ноль загрузок — недостаточно данных для сравнения.";
             }
             
             if (prevDownloads === 0) {
-                return "The previous version has zero downloads - growth rate is infinite!";
+                return "У предыдущей версии ноль загрузок — темпы роста бесконечны!";
             }
             
             if (newDownloads === 0) {
-                return "The new version has zero downloads - consider investigating release issues.";
+                return "У новой версии ноль загрузок — рассмотрите возможность изучения проблем с выпуском.";
             }
             
             if (change > 50) {
-                return "The new version shows significant growth compared to the previous version!";
+                return "Новая версия гораздо популярнее по сравнению с предыдущей версией! Фантастика!";
             }
             else if (change > 0) {
-                return "The new version shows positive growth compared to the previous version.";
+                return "Новая версия набирает рост по сравнению с предыдущей версией. Дайте время!";
             }
             else if (change === 0) {
-                return "Both versions have similar download numbers.";
+                return "У обеих версий схожее количество загрузок. Ну и кто тут лучше?";
             }
             else {
-                return "The new version has lower adoption than the previous version - consider investigating why.";
+                return "Новую версию меньше принимают, чем предыдущую. Интересно, почему?";
             }
         }
     </script>
