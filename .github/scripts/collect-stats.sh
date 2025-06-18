@@ -1,23 +1,24 @@
 #!/bin/bash
 
-# Установка GitHub CLI, если не установлен (обычно уже предустановлен в Actions)
-if ! command -v gh &> /dev/null; then
-    echo "GitHub CLI not found, installing..."
-    sudo apt-get update
-    sudo apt-get install -y gh
-fi
+set -e  # Прерывать выполнение при любой ошибке
 
-# Аутентификация с GitHub Token
-gh auth login --with-token <<< "$GITHUB_TOKEN"
+# Установка необходимых инструментов
+sudo apt-get update
+sudo apt-get install -y jq
+
+# Аутентификация
+echo "Authenticating with GitHub..."
+gh auth status || gh auth login --with-token <<< "$GITHUB_TOKEN"
 
 # Получение информации о репозитории
-owner=$(echo $GITHUB_REPOSITORY | cut -d'/' -f1)
-repo=$(echo $GITHUB_REPOSITORY | cut -d'/' -f2)
+owner=$(echo "$GITHUB_REPOSITORY" | cut -d'/' -f1)
+repo=$(echo "$GITHUB_REPOSITORY" | cut -d'/' -f2)
 
 echo "Collecting stats for $owner/$repo"
 
 # Получение списка релизов
-releases=$(gh api repos/$owner/$repo/releases)
+echo "Fetching releases..."
+releases=$(gh api "repos/$owner/$repo/releases" | jq -c '.')
 
 # Создание JSON-статистики
 stats=$(jq -n \
@@ -32,18 +33,18 @@ stats=$(jq -n \
 
 # Обработка каждого релиза
 for row in $(echo "$releases" | jq -r '.[] | @base64'); do
-    release=$(echo "$row" | base64 --decode | jq '.')
-    tag_name=$(echo "$release" | jq -r '.tag_name')
-    release_id=$(echo "$release" | jq -r '.id')
+    release_json=$(echo "$row" | base64 --decode)
+    tag_name=$(echo "$release_json" | jq -r '.tag_name')
+    release_id=$(echo "$release_json" | jq -r '.id')
     
     echo "Processing release: $tag_name"
     
     # Получение ассетов для релиза
-    assets=$(gh api repos/$owner/$repo/releases/$release_id/assets)
+    assets=$(gh api "repos/$owner/$repo/releases/$release_id/assets" | jq -c '.')
     
     release_stats=$(jq -n \
         --arg tag_name "$tag_name" \
-        --arg created_at "$(echo "$release" | jq -r '.created_at')" \
+        --arg created_at "$(echo "$release_json" | jq -r '.created_at')" \
         --argjson assets "$assets" \
         '{
             id: '$release_id',
@@ -55,18 +56,18 @@ for row in $(echo "$releases" | jq -r '.[] | @base64'); do
     
     # Обработка ассетов
     for asset_row in $(echo "$assets" | jq -r '.[] | @base64'); do
-        asset=$(echo "$asset_row" | base64 --decode | jq '.')
-        name=$(echo "$asset" | jq -r '.name')
-        downloads=$(echo "$asset" | jq -r '.download_count')
+        asset_json=$(echo "$asset_row" | base64 --decode)
+        name=$(echo "$asset_json" | jq -r '.name')
+        downloads=$(echo "$asset_json" | jq -r '.download_count')
         
         release_stats=$(echo "$release_stats" | jq \
             --arg name "$name" \
-            --arg downloads "$downloads" \
-            --arg content_type "$(echo "$asset" | jq -r '.content_type')" \
-            '.downloads += ($downloads | tonumber) | 
+            --argjson downloads "$downloads" \
+            --arg content_type "$(echo "$asset_json" | jq -r '.content_type')" \
+            '.downloads += $downloads | 
              .assets += [{
                  name: $name,
-                 downloads: ($downloads | tonumber),
+                 downloads: $downloads,
                  content_type: $content_type
              }]')
     done
@@ -80,5 +81,5 @@ for row in $(echo "$releases" | jq -r '.[] | @base64'); do
 done
 
 # Сохранение результатов
-echo "$stats" > stats.json
+echo "$stats" | jq '.' > stats.json
 echo "Statistics saved to stats.json"
