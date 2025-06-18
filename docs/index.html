@@ -370,12 +370,10 @@
         function renderChart(data) {
             const ctx = document.getElementById('releasesChart').getContext('2d');
             
-            // Destroy previous chart if exists
             if (releasesChart) {
                 releasesChart.destroy();
             }
             
-            // Prepare chart data
             const labels = data.releases.map(r => r.tag_name);
             const downloads = data.releases.map(r => r.downloads);
             
@@ -384,7 +382,7 @@
                 data: {
                     labels: labels,
                     datasets: [{
-                        label: 'Downloads',
+                        label: 'Загрузки',
                         data: downloads,
                         backgroundColor: 'rgba(52, 152, 219, 0.7)',
                         borderColor: 'rgba(52, 152, 219, 1)',
@@ -404,7 +402,7 @@
                             beginAtZero: true,
                             title: {
                                 display: true,
-                                text: 'Downloads'
+                                text: 'Загрузки'
                             },
                             ticks: {
                                 precision: 0
@@ -413,7 +411,7 @@
                         x: {
                             title: {
                                 display: true,
-                                text: 'Version'
+                                text: 'Версия'
                             }
                         }
                     }
@@ -437,41 +435,14 @@
                 select1.appendChild(option.cloneNode(true));
                 select2.appendChild(option);
             });
-            
-            // Автовыбор: последняя версия vs предыдущая стабильная
+
             if (data.releases.length >= 2) {
-                // Индекс последней (самой новой) версии
-                const latestIndex = 0; // Первый элемент массива - самый новый
-                
-                // Ищем предыдущую стабильную версию
-                let previousStableIndex = 1; // Начинаем со следующей после новейшей
-                
-                // Ищем первую стабильную версию после новейшей
-                while (previousStableIndex < data.releases.length) {
-                    const version = data.releases[previousStableIndex].tag_name;
-                    // Пропускаем пре-релизы
-                    if (!version.toLowerCase().includes('beta') && 
-                        !version.toLowerCase().includes('rc') &&
-                        !version.toLowerCase().includes('alpha')) {
-                        break;
-                    }
-                    previousStableIndex++;
-                }
-                
-                // Если нашли подходящую версию
-                if (previousStableIndex < data.releases.length) {
-                    // Устанавливаем:
-                    // v1 = предыдущая стабильная версия
-                    // v2 = самая новая версия
-                    select1.selectedIndex = previousStableIndex;
-                    select2.selectedIndex = latestIndex;
-                } else {
-                    // Резервный вариант: новейшая и предпоследняя
-                    select1.selectedIndex = 1;
-                    select2.selectedIndex = 0;
-                }
+                // Устанавливаем значения напрямую
+                select1.value = data.releases[1].tag_name; // Предыдущая версия
+                select2.value = data.releases[0].tag_name; // Последняя версия
             }
         }
+           
         
         function compareVersions() {
             if (!statsData) return;
@@ -512,26 +483,29 @@
             const newTag = isV1Newer ? v1 : v2;
             
             // Рассчитываем метрики
+            const downloadsPrevious = previousVersion.downloads;
+            const downloadsNew = newVersion.downloads;
+            
             let ratio = "N/A";
             let improvement = "N/A";
-            if (downloadsPrevious > 0) {
-                const change = downloadsNew - downloadsPrevious;
-                const percent = ((change) / downloadsPrevious * 100).toFixed(1);
-                
-                improvement = change >= 0 
-                    ? `+${percent}% (увеличено на ${change})` 
-                    : `${percent}% (уменьшено на ${Math.abs(change)})`;
-            } else if (downloadsNew > 0) {
-                improvement = `+∞% (первые загрузки)`;
-            }
             let trendClass = "";
             let changeValue = 0;
             
             if (downloadsPrevious > 0) {
                 ratio = (downloadsNew / downloadsPrevious).toFixed(2);
                 changeValue = ((downloadsNew - downloadsPrevious) / downloadsPrevious * 100);
-                improvement = `${Math.abs(changeValue).toFixed(1)}% ${changeValue >= 0 ? 'increase' : 'decrease'}`;
+                
+                const change = downloadsNew - downloadsPrevious;
+                improvement = change >= 0 
+                    ? `+${changeValue.toFixed(1)}% (увеличено на ${change})` 
+                    : `${changeValue.toFixed(1)}% (уменьшено на ${Math.abs(change)})`;
+                
                 trendClass = changeValue >= 0 ? "trend-up" : "trend-down";
+            } else if (downloadsNew > 0) {
+                ratio = "∞";
+                improvement = "+∞% (первые загрузки)";
+                trendClass = "trend-up";
+                changeValue = Infinity;
             }
             
             // Рассчитываем дни между релизами
