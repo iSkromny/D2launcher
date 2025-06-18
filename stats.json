@@ -1,5 +1,5 @@
 {
-  "updated_at": "2025-06-18T08:10:28Z",
+  "updated_at": "2025-06-18T09:41:33Z",
   "total_releases": 2,
   "total_downloads": 16,
   "releases": [
@@ -29,5 +29,6 @@
         }
       ]
     }
-  ]
+  ],
+  "daily_downloads": []
 }
