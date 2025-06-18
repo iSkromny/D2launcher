@@ -438,10 +438,26 @@
                 select2.appendChild(option);
             });
             
-            // Auto-select the last two versions
+            // Auto-select: latest vs previous stable
             if (data.releases.length >= 2) {
-                select1.selectedIndex = data.releases.length - 2;
-                select2.selectedIndex = data.releases.length - 1;
+                const latestIndex = data.releases.length - 1;
+                
+                // Find previous stable version
+                let prevStableIndex = latestIndex - 1;
+                while (prevStableIndex >= 0) {
+                    const version = data.releases[prevStableIndex].tag_name;
+                    // Пропускаем бета-версии и RC
+                    if (!version.includes('beta') && !version.includes('rc')) {
+                        break;
+                    }
+                    prevStableIndex--;
+                }
+                
+                // Fallback to direct previous if no stable found
+                if (prevStableIndex < 0) prevStableIndex = latestIndex - 1;
+                
+                select1.selectedIndex = prevStableIndex;
+                select2.selectedIndex = latestIndex;
             }
         }
         
@@ -511,7 +527,7 @@
                     <div class="metrics-explained">
                         <div class="metric-explanation">
                             <h4>Popularity Ratio (${v1} → ${v2})</h4>
-                            <p>Shows how many times the newer version ${v2} is more popular than ${v1}. 
+                            <p>Shows how many times the newer version ${v1} is more popular than ${v2}. 
                             Value > 1 = more popular, < 1 = less popular.</p>
                             <div class="metric-value ${trendClass}">${ratio}</div>
                         </div>
@@ -545,11 +561,11 @@
         
         function getComparisonConclusion(d1, d2, days, change, v1, v2) {
             if (d1 === 0 || d2 === 0) {
-                return "Insufficient data for meaningful comparison. One of the versions has zero downloads.";
+                return "Пока одна из версий имеет 0 скачиваний мы посидим и подождём.";
             }
             
             if (change > 50) {
-                return `Version ${v2} is significantly more popular than ${v1} - great adoption rate!`;
+                return `Версия ${v2} значительно популярнее, чем ${v1}`;
             }
             else if (change > 0) {
                 return `Version ${v2} shows positive growth compared to ${v1}.`;
