@@ -85,10 +85,15 @@ done
 # Сбор ежедневной статистики (исправленная версия)
 echo "Сбор ежедневной статистики..."
 daily_downloads=$(echo "$releases_json" | jq -c '
-    map({
+    [.[] | {
         date: (.created_at | split("T")[0]),
-        downloads: (.assets | map(.download_count) | add)
-    })
+        downloads: (
+            if .assets and (.assets | length) > 0 
+            then [.assets[].download_count] | add 
+            else 0 
+            end
+        )
+    }]
     | group_by(.date)
     | map({
         date: .[0].date,
@@ -97,6 +102,10 @@ daily_downloads=$(echo "$releases_json" | jq -c '
     | sort_by(.date)
     | reverse
 ')
+
+# Отладочный вывод
+echo "Daily downloads raw data:"
+echo "$daily_downloads"
 
 # Если возникла ошибка, используем пустой массив
 if [ $? -ne 0 ] || [ -z "$daily_downloads" ]; then
@@ -108,7 +117,6 @@ fi
 stats=$(echo "$stats" | jq \
     --argjson daily_downloads "$daily_downloads" \
     '. + {daily_downloads: $daily_downloads}')
-
 # Сохранение результатов
 echo "$stats" | jq '.' > stats.json
 echo "Statistics saved to stats.json"
