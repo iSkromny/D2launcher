@@ -77,7 +77,8 @@ for i in $(seq 0 $(($(echo "$releases" | jq 'length') - 1))); do
     total_downloads=$(echo "$release_stats" | jq '.downloads')
     stats=$(echo "$stats" | jq \
         --argjson release_stats "$release_stats" \
-        '.total_downloads += $total_downloads |
+        --argjson downloads "$total_downloads" \
+        '.total_downloads += $downloads |
          .releases += [$release_stats]')
 done
 
