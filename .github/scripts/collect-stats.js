@@ -2,21 +2,39 @@ const fs = require('fs');
 
 module.exports = async () => {
   try {
-    // Используем динамический импорт для Octokit
+    console.log("Starting stats collection...");
+    
+    // Динамический импорт Octokit
     const { Octokit } = await import('@octokit/rest');
+    console.log("Octokit imported successfully");
     
     const octokit = new Octokit({ 
       auth: process.env.GITHUB_TOKEN,
       userAgent: "D2Launcher Stats Collector"
     });
     
+    console.log("GitHub Token:", process.env.GITHUB_TOKEN ? "***" : "MISSING");
+    console.log("GITHUB_REPOSITORY:", process.env.GITHUB_REPOSITORY);
+    
+    if (!process.env.GITHUB_REPOSITORY) {
+      throw new Error("GITHUB_REPOSITORY environment variable is missing");
+    }
+    
     const [owner, repo] = process.env.GITHUB_REPOSITORY.split("/");
+    console.log(`Owner: ${owner}, Repo: ${repo}`);
     
     // Получаем все релизы
+    console.log("Fetching releases...");
     const releases = await octokit.paginate(
       octokit.rest.repos.listReleases,
-      { owner, repo, per_page: 100 }
+      { 
+        owner, 
+        repo, 
+        per_page: 100 
+      }
     );
+    
+    console.log(`Found ${releases.length} releases`);
     
     // Формируем статистику
     const stats = {
@@ -27,6 +45,7 @@ module.exports = async () => {
     };
     
     for (const release of releases) {
+      console.log(`Processing release: ${release.tag_name}`);
       const releaseStats = {
         id: release.id,
         tag_name: release.tag_name,
@@ -37,6 +56,7 @@ module.exports = async () => {
       
       // Считаем скачивания для каждого ассета
       for (const asset of release.assets) {
+        console.log(`- Asset: ${asset.name} (${asset.download_count} downloads)`);
         releaseStats.downloads += asset.download_count;
         stats.total_downloads += asset.download_count;
         
@@ -51,8 +71,10 @@ module.exports = async () => {
     }
     
     // Сохраняем в файл
-    fs.writeFileSync("stats.json", JSON.stringify(stats, null, 2));
-    console.log("Statistics collected successfully!");
+    const filePath = "stats.json";
+    fs.writeFileSync(filePath, JSON.stringify(stats, null, 2));
+    console.log(`Statistics saved to ${filePath}`);
+    console.log(`Total downloads: ${stats.total_downloads}`);
     
   } catch (error) {
     console.error("Error collecting stats:", error);
