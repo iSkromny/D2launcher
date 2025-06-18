@@ -15,17 +15,15 @@
     </div>
 
     <script>
-        fetch('https://raw.githubusercontent.com/iSkromny/D2launcher/stats.json')
-            .then(response => response.json())
-            .then(data => {
-                if (data.error) {
-                    document.getElementById('stats-container').innerHTML = `
-                        <h2>Error</h2>
-                        <p>${data.error}</p>
-                    `;
-                    return;
+        // ИСПРАВЛЕННЫЙ URL
+        fetch('https://raw.githubusercontent.com/iSkromny/D2launcher/main/stats.json')
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
                 }
-                
+                return response.json();
+            })
+            .then(data => {
                 // Общая статистика
                 document.getElementById('stats-container').innerHTML = `
                     <h2>Total Releases: ${data.total_releases}</h2>
@@ -38,8 +36,11 @@
                     // График по релизам
                     const releasesCtx = document.createElement('canvas');
                     releasesCtx.id = 'releasesChart';
-                    document.body.appendChild(document.createElement('div')).className = 'chart-container';
-                    document.body.lastChild.appendChild(releasesCtx);
+                    
+                    const chartContainer = document.createElement('div');
+                    chartContainer.className = 'chart-container';
+                    chartContainer.appendChild(releasesCtx);
+                    document.body.appendChild(chartContainer);
                     
                     new Chart(releasesCtx, {
                         type: 'bar',
@@ -50,6 +51,10 @@
                                 data: data.releases.map(r => r.downloads),
                                 backgroundColor: 'rgba(54, 162, 235, 0.5)'
                             }]
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false
                         }
                     });
                 }
@@ -59,6 +64,7 @@
                     <h2>Error Loading Stats</h2>
                     <p>${error.message}</p>
                 `;
+                console.error('Fetch error:', error);
             });
     </script>
 </body>
