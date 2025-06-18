@@ -82,17 +82,27 @@ for i in $(seq 0 $(($(echo "$releases" | jq 'length') - 1))); do
          .releases += [$release_stats]')
 done
 
-# Сбор ежедневной статистики скачиваний
+# Сбор ежедневной статистики (исправленная версия)
 echo "Сбор ежедневной статистики..."
-daily_downloads=$(echo "$releases_json" | jq '
-    [.[] | {
+daily_downloads=$(echo "$releases_json" | jq -c '
+    map({
         date: (.created_at | split("T")[0]),
         downloads: (.assets | map(.download_count) | add)
-    }] | group_by(.date) | map({
+    })
+    | group_by(.date)
+    | map({
         date: .[0].date,
         downloads: map(.downloads) | add
-    }) | sort_by(.date) | reverse
+    })
+    | sort_by(.date)
+    | reverse
 ')
+
+# Если возникла ошибка, используем пустой массив
+if [ $? -ne 0 ] || [ -z "$daily_downloads" ]; then
+    echo "Ошибка при сборе ежедневной статистики, используется пустой массив"
+    daily_downloads='[]'
+fi
 
 # Добавление daily_downloads в итоговую статистику
 stats=$(echo "$stats" | jq \
