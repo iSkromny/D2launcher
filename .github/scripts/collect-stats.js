@@ -1,8 +1,10 @@
-const { Octokit } = require("@octokit/rest");
-const fs = require("fs");
+const fs = require('fs');
 
 module.exports = async () => {
   try {
+    // Используем динамический импорт для Octokit
+    const { Octokit } = await import('@octokit/rest');
+    
     const octokit = new Octokit({ 
       auth: process.env.GITHUB_TOKEN,
       userAgent: "D2Launcher Stats Collector"
@@ -12,7 +14,7 @@ module.exports = async () => {
     
     // Получаем все релизы
     const releases = await octokit.paginate(
-      octokit.repos.listReleases,
+      octokit.rest.repos.listReleases,
       { owner, repo, per_page: 100 }
     );
     
