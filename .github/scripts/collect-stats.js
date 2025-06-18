@@ -1,38 +1,37 @@
 const fs = require('fs');
+const path = require('path');
 
-module.exports = async () => {
+async function main() {
   try {
     console.log("Starting stats collection...");
+    console.log("Current directory:", process.cwd());
     
     // Динамический импорт Octokit
     const { Octokit } = await import('@octokit/rest');
     console.log("Octokit imported successfully");
     
+    const token = process.env.GITHUB_TOKEN;
+    const repository = process.env.GITHUB_REPOSITORY;
+    
+    if (!token || !repository) {
+      throw new Error("Missing required environment variables");
+    }
+    
+    const [owner, repo] = repository.split("/");
+    console.log(`Repository: ${owner}/${repo}`);
+    
     const octokit = new Octokit({ 
-      auth: process.env.GITHUB_TOKEN,
+      auth: token,
       userAgent: "D2Launcher Stats Collector"
     });
     
-    console.log("GitHub Token:", process.env.GITHUB_TOKEN ? "***" : "MISSING");
-    console.log("GITHUB_REPOSITORY:", process.env.GITHUB_REPOSITORY);
-    
-    if (!process.env.GITHUB_REPOSITORY) {
-      throw new Error("GITHUB_REPOSITORY environment variable is missing");
-    }
-    
-    const [owner, repo] = process.env.GITHUB_REPOSITORY.split("/");
-    console.log(`Owner: ${owner}, Repo: ${repo}`);
-    
     // Получаем все релизы
     console.log("Fetching releases...");
-    const releases = await octokit.paginate(
-      octokit.rest.repos.listReleases,
-      { 
-        owner, 
-        repo, 
-        per_page: 100 
-      }
-    );
+    const releases = await octokit.paginate("GET /repos/{owner}/{repo}/releases", {
+      owner,
+      repo,
+      per_page: 100
+    });
     
     console.log(`Found ${releases.length} releases`);
     
@@ -55,7 +54,7 @@ module.exports = async () => {
       };
       
       // Считаем скачивания для каждого ассета
-      for (const asset of release.assets) {
+      for (const asset of release.assets || []) {
         console.log(`- Asset: ${asset.name} (${asset.download_count} downloads)`);
         releaseStats.downloads += asset.download_count;
         stats.total_downloads += asset.download_count;
@@ -71,13 +70,26 @@ module.exports = async () => {
     }
     
     // Сохраняем в файл
-    const filePath = "stats.json";
+    const filePath = path.join(process.cwd(), "stats.json");
     fs.writeFileSync(filePath, JSON.stringify(stats, null, 2));
     console.log(`Statistics saved to ${filePath}`);
     console.log(`Total downloads: ${stats.total_downloads}`);
     
+    return true;
   } catch (error) {
     console.error("Error collecting stats:", error);
-    process.exit(1);
+    // Создаем пустой файл в случае ошибки
+    const filePath = path.join(process.cwd(), "stats.json");
+    fs.writeFileSync(filePath, JSON.stringify({
+      error: error.message,
+      updated_at: new Date().toISOString()
+    }, null, 2));
+    console.log("Created empty stats.json with error details");
+    return false;
   }
-};
+}
+
+// Запуск основной функции
+main().then(success => {
+  process.exit(success ? 0 : 1);
+});
