@@ -6,6 +6,13 @@
     <title>D2Launcher Release Statistics</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
+        :root {
+            --primary: #3498db;
+            --secondary: #2ecc71;
+            --light: #f8f9fa;
+            --dark: #2c3e50;
+        }
+        
         * {
             box-sizing: border-box;
             margin: 0;
@@ -30,7 +37,7 @@
         }
         
         h1 {
-            color: #2c3e50;
+            color: var(--dark);
             margin-bottom: 10px;
         }
         
@@ -51,7 +58,7 @@
         
         .card h3 {
             margin-top: 0;
-            color: #2c3e50;
+            color: var(--dark);
             font-size: 1.1rem;
             margin-bottom: 10px;
         }
@@ -60,7 +67,7 @@
             font-size: 2rem;
             font-weight: bold;
             margin: 10px 0;
-            color: #3498db;
+            color: var(--primary);
         }
         
         .chart-container {
@@ -69,16 +76,22 @@
             padding: 20px;
             box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
             margin-bottom: 30px;
+            position: relative;
             height: 400px; /* Фиксированная высота */
-            position: relative; /* Для корректного позиционирования canvas */
+        }
+        
+        .chart-wrapper {
+            position: relative;
+            height: 350px; /* Высота графика */
+            width: 100%;
         }
         
         .chart-container h2 {
             margin-top: 0;
-            color: #2c3e50;
+            color: var(--dark);
             padding-bottom: 10px;
             border-bottom: 1px solid #eee;
-            margin-bottom: 20px;
+            margin-bottom: 15px;
         }
         
         .comparison-section {
@@ -106,7 +119,7 @@
         }
         
         button {
-            background: #3498db;
+            background: var(--primary);
             color: white;
             border: none;
             padding: 10px 20px;
@@ -137,13 +150,13 @@
         .version-card {
             padding: 15px;
             border-radius: 8px;
-            background: #f8f9fa;
-            border-left: 4px solid #3498db;
+            background: var(--light);
+            border-left: 4px solid var(--primary);
         }
         
         .version-card h4 {
             margin-top: 0;
-            color: #2c3e50;
+            color: var(--dark);
             margin-bottom: 10px;
         }
         
@@ -151,14 +164,14 @@
             font-size: 1.8rem;
             font-weight: bold;
             margin: 10px 0;
-            color: #3498db;
+            color: var(--primary);
         }
         
         .comparison-metrics {
             background: #e9f7fe;
             padding: 15px;
             border-radius: 8px;
-            border-left: 4px solid #3498db;
+            border-left: 4px solid var(--primary);
         }
         
         .metrics-grid {
@@ -190,6 +203,10 @@
         .trend-down {
             color: #e74c3c;
         }
+        
+        .hidden {
+            display: none;
+        }
     </style>
 </head>
 <body>
@@ -198,7 +215,7 @@
         <p>Tracking downloads and version adoption</p>
     </header>
 
-    <main>
+    <main id="main-content" class="hidden">
         <div id="stats-container">
             <div class="summary-cards">
                 <div class="card">
@@ -218,7 +235,9 @@
 
         <div class="chart-container">
             <h2>Downloads per Release</h2>
-            <canvas id="releasesChart"></canvas>
+            <div class="chart-wrapper">
+                <canvas id="releasesChart"></canvas>
+            </div>
         </div>
 
         <div class="comparison-section">
@@ -232,10 +251,18 @@
         </div>
     </main>
 
+    <div id="loading">
+        <p>Loading release statistics...</p>
+    </div>
+
     <script>
         // Global variables
         let statsData = null;
         let releasesChart = null;
+        
+        // Show loading state
+        document.getElementById('loading').style.display = 'block';
+        document.getElementById('main-content').classList.add('hidden');
         
         // Initialize
         fetchData();
@@ -251,9 +278,13 @@
                 .then(data => {
                     statsData = data;
                     processData(data);
+                    
+                    // Hide loading and show content
+                    document.getElementById('loading').style.display = 'none';
+                    document.getElementById('main-content').classList.remove('hidden');
                 })
                 .catch(error => {
-                    document.getElementById('stats-container').innerHTML = `
+                    document.getElementById('loading').innerHTML = `
                         <div class="error">
                             <h2>Error Loading Stats</h2>
                             <p>${error.message}</p>
@@ -318,6 +349,9 @@
                             title: {
                                 display: true,
                                 text: 'Downloads'
+                            },
+                            ticks: {
+                                precision: 0
                             }
                         },
                         x: {
