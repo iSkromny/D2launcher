@@ -2,51 +2,63 @@
 
 set -e
 
-# Установка необходимых инструментов
+# Установка инструментов
 sudo apt-get update
 sudo apt-get install -y jq
 
 # Аутентификация
 echo "Authenticating with GitHub..."
-gh auth status || gh auth login --with-token <<< "$GITHUB_TOKEN"
+gh auth login --with-token <<< "$GITHUB_TOKEN"
 
 # Получение информации о репозитории
 owner=$(echo "$GITHUB_REPOSITORY" | cut -d'/' -f1)
 repo=$(echo "$GITHUB_REPOSITORY" | cut -d'/' -f2)
-
 echo "Collecting stats for $owner/$repo"
 
 # Получение списка релизов
 echo "Fetching releases..."
-releases=$(gh api "repos/$owner/$repo/releases" | jq -c '.')
+releases_json=$(gh api "repos/$owner/$repo/releases")
+total_releases=$(echo "$releases_json" | jq length)
 
-# Создание JSON-статистики
+# Загрузка исторических данных
+if [ -f "historical_data.json" ]; then
+    historical_data=$(cat historical_data.json)
+else
+    historical_data="{}"
+fi
+
+# Текущая дата
+current_date=$(date -u +"%Y-%m-%d")
+
+# Инициализация основного объекта статистики
 stats=$(jq -n \
     --arg updated_at "$(date -u +"%Y-%m-%dT%H:%M:%SZ")" \
-    --argjson releases "$releases" \
+    --argjson total_releases "$total_releases" \
     '{
         updated_at: $updated_at,
-        total_releases: ($releases | length),
+        total_releases: $total_releases,
         total_downloads: 0,
-        releases: []
+        releases: [],
+        daily_downloads: {}
     }')
 
-# Обработка каждого релиза
-for i in $(seq 0 $(($(echo "$releases" | jq 'length') - 1))); do
-    release_json=$(echo "$releases" | jq -c ".[$i]")
-    tag_name=$(echo "$release_json" | jq -r '.tag_name')
-    release_id=$(echo "$release_json" | jq -r '.id')
+# Обработка релизов
+for i in $(seq 0 $((total_releases - 1))); do
+    release=$(echo "$releases_json" | jq ".[$i]")
+    tag_name=$(echo "$release" | jq -r '.tag_name')
+    release_id=$(echo "$release" | jq -r '.id')
     
     echo "Processing release: $tag_name"
     
-    # Получение ассетов для релиза (с обработкой ошибок)
-    assets=$(gh api "repos/$owner/$repo/releases/$release_id/assets" 2>/dev/null || echo '[]' | jq -c '.')
+    # Получение ассетов релиза
+    assets_json=$(gh api "repos/$owner/$repo/releases/$release_id/assets" 2>/dev/null || echo '[]')
+    assets_count=$(echo "$assets_json" | jq length)
     
+    # Инициализация статистики релиза
     release_stats=$(jq -n \
         --arg tag_name "$tag_name" \
-        --arg created_at "$(echo "$release_json" | jq -r '.created_at')" \
+        --arg created_at "$(echo "$release" | jq -r '.created_at')" \
         --argjson release_id "$release_id" \
-        --argjson assets "$assets" \
         '{
             id: $release_id,
             tag_name: $tag_name,
@@ -56,67 +68,64 @@ for i in $(seq 0 $(($(echo "$releases" | jq 'length') - 1))); do
         }')
     
     # Обработка ассетов
-    for j in $(seq 0 $(($(echo "$assets" | jq 'length') - 1))); do
-        asset_json=$(echo "$assets" | jq -c ".[$j]")
-        name=$(echo "$asset_json" | jq -r '.name')
-        downloads=$(echo "$asset_json" | jq -r '.download_count')
+    for j in $(seq 0 $((assets_count - 1))); do
+        asset=$(echo "$assets_json" | jq ".[$j]")
+        name=$(echo "$asset" | jq -r '.name')
+        downloads=$(echo "$asset" | jq -r '.download_count')
         
+        # Обновление статистики релиза
         release_stats=$(echo "$release_stats" | jq \
             --arg name "$name" \
             --argjson downloads "$downloads" \
-            --arg content_type "$(echo "$asset_json" | jq -r '.content_type')" \
-            '.downloads += $downloads | 
+            '.downloads += $downloads |
              .assets += [{
                  name: $name,
-                 downloads: $downloads,
-                 content_type: $content_type
+                 downloads: $downloads
              }]')
     done
     
     # Обновление общей статистики
-    total_downloads=$(echo "$release_stats" | jq '.downloads')
+    release_downloads=$(echo "$release_stats" | jq '.downloads')
     stats=$(echo "$stats" | jq \
         --argjson release_stats "$release_stats" \
-        --argjson downloads "$total_downloads" \
+        --argjson downloads "$release_downloads" \
         '.total_downloads += $downloads |
          .releases += [$release_stats]')
+    
+    # Обновление ежедневной статистики
+    for j in $(seq 0 $((assets_count - 1))); do
+        asset=$(echo "$assets_json" | jq ".[$j]")
+        asset_id=$(echo "$asset" | jq -r '.id')
+        asset_name=$(echo "$asset" | jq -r '.name')
+        current_downloads=$(echo "$asset" | jq -r '.download_count')
+        
+        # Получение исторических данных для этого ассета
+        historical_downloads=$(echo "$historical_data" | jq --arg id "$asset_id" '.[$id] // 0')
+        
+        # Рассчитать скачивания за сегодня
+        daily_downloads=$((current_downloads - historical_downloads))
+        
+        # Обновить статистику для текущего дня
+        stats=$(echo "$stats" | jq \
+            --arg date "$current_date" \
+            --arg name "$asset_name" \
+            --argjson downloads "$daily_downloads" \
+            '.daily_downloads[$date] = (.daily_downloads[$date] // {}) |
+             .daily_downloads[$date][$name] = (.daily_downloads[$date][$name] // 0) + $downloads')
+    done
 done
 
-# Сбор ежедневной статистики (исправленная версия)
-echo "Сбор ежедневной статистики..."
-daily_downloads=$(echo "$releases_json" | jq -c '
-    [.[] | {
-        date: (.created_at | split("T")[0]),
-        downloads: (
-            if .assets and (.assets | length) > 0 
-            then [.assets[].download_count] | add 
-            else 0 
-            end
+# Обновить исторические данные для будущих сравнений
+updated_historical_data=$(echo "$releases_json" | jq '
+    reduce .[] as $release ({}; 
+        reduce $release.assets[] as $asset (.;
+            .[$asset.id | tostring] = $asset.download_count
         )
-    }]
-    | group_by(.date)
-    | map({
-        date: .[0].date,
-        downloads: map(.downloads) | add
-    })
-    | sort_by(.date)
-    | reverse
+    )
 ')
 
-# Отладочный вывод
-echo "Daily downloads raw data:"
-echo "$daily_downloads"
-
-# Если возникла ошибка, используем пустой массив
-if [ $? -ne 0 ] || [ -z "$daily_downloads" ]; then
-    echo "Ошибка при сборе ежедневной статистики, используется пустой массив"
-    daily_downloads='[]'
-fi
-
-# Добавление daily_downloads в итоговую статистику
-stats=$(echo "$stats" | jq \
-    --argjson daily_downloads "$daily_downloads" \
-    '. + {daily_downloads: $daily_downloads}')
 # Сохранение результатов
 echo "$stats" | jq '.' > stats.json
+echo "$updated_historical_data" | jq '.' > historical_data.json
 echo "Statistics saved to stats.json"
+echo "Historical data updated"
