@@ -2,22 +2,26 @@
 
 set -e
 
-# Установка инструментов
+# Установка необходимых инструментов
 sudo apt-get update
-sudo apt-get install -y jq
-
-# Аутентификация
-echo "Authenticating with GitHub..."
-gh auth login --with-token <<< "$GITHUB_TOKEN"
+sudo apt-get install -y jq curl
 
 # Получение информации о репозитории
 owner=$(echo "$GITHUB_REPOSITORY" | cut -d'/' -f1)
 repo=$(echo "$GITHUB_REPOSITORY" | cut -d'/' -f2)
 echo "Collecting stats for $owner/$repo"
 
+# Функция для вызова GitHub API
+github_api() {
+    local endpoint=$1
+    curl -s -H "Authorization: token $GITHUB_TOKEN" \
+         -H "Accept: application/vnd.github.v3+json" \
+         "https://api.github.com/$endpoint"
+}
+
 # Получение списка релизов
 echo "Fetching releases..."
-releases_json=$(gh api "repos/$owner/$repo/releases")
+releases_json=$(github_api "repos/$owner/$repo/releases")
 total_releases=$(echo "$releases_json" | jq length)
 
 # Загрузка исторических данных
@@ -51,7 +55,7 @@ for i in $(seq 0 $((total_releases - 1))); do
     echo "Processing release: $tag_name"
     
     # Получение ассетов релиза
-    assets_json=$(gh api "repos/$owner/$repo/releases/$release_id/assets" 2>/dev/null || echo '[]')
+    assets_json=$(github_api "repos/$owner/$repo/releases/$release_id/assets")
     assets_count=$(echo "$assets_json" | jq length)
     
     # Инициализация статистики релиза
@@ -104,6 +108,9 @@ for i in $(seq 0 $((total_releases - 1))); do
         
         # Рассчитать скачивания за сегодня
         daily_downloads=$((current_downloads - historical_downloads))
+        if [ "$daily_downloads" -lt 0 ]; then
+            daily_downloads=0
+        fi
         
         # Обновить статистику для текущего дня
         stats=$(echo "$stats" | jq \
