@@ -1,95 +1,84 @@
-const fs = require('fs');
-const path = require('path');
+#!/bin/bash
 
-async function main() {
-  try {
-    console.log("Starting stats collection...");
-    console.log("Current directory:", process.cwd());
+# Установка GitHub CLI, если не установлен (обычно уже предустановлен в Actions)
+if ! command -v gh &> /dev/null; then
+    echo "GitHub CLI not found, installing..."
+    sudo apt-get update
+    sudo apt-get install -y gh
+fi
+
+# Аутентификация с GitHub Token
+gh auth login --with-token <<< "$GITHUB_TOKEN"
+
+# Получение информации о репозитории
+owner=$(echo $GITHUB_REPOSITORY | cut -d'/' -f1)
+repo=$(echo $GITHUB_REPOSITORY | cut -d'/' -f2)
+
+echo "Collecting stats for $owner/$repo"
+
+# Получение списка релизов
+releases=$(gh api repos/$owner/$repo/releases)
+
+# Создание JSON-статистики
+stats=$(jq -n \
+    --arg updated_at "$(date -u +"%Y-%m-%dT%H:%M:%SZ")" \
+    --argjson releases "$releases" \
+    '{
+        updated_at: $updated_at,
+        total_releases: ($releases | length),
+        total_downloads: 0,
+        releases: []
+    }')
+
+# Обработка каждого релиза
+for row in $(echo "$releases" | jq -r '.[] | @base64'); do
+    release=$(echo "$row" | base64 --decode | jq '.')
+    tag_name=$(echo "$release" | jq -r '.tag_name')
+    release_id=$(echo "$release" | jq -r '.id')
     
-    // Динамический импорт Octokit
-    const { Octokit } = await import('@octokit/rest');
-    console.log("Octokit imported successfully");
+    echo "Processing release: $tag_name"
     
-    const token = process.env.GITHUB_TOKEN;
-    const repository = process.env.GITHUB_REPOSITORY;
+    # Получение ассетов для релиза
+    assets=$(gh api repos/$owner/$repo/releases/$release_id/assets)
     
-    if (!token || !repository) {
-      throw new Error("Missing required environment variables");
-    }
+    release_stats=$(jq -n \
+        --arg tag_name "$tag_name" \
+        --arg created_at "$(echo "$release" | jq -r '.created_at')" \
+        --argjson assets "$assets" \
+        '{
+            id: '$release_id',
+            tag_name: $tag_name,
+            created_at: $created_at,
+            downloads: 0,
+            assets: []
+        }')
     
-    const [owner, repo] = repository.split("/");
-    console.log(`Repository: ${owner}/${repo}`);
-    
-    const octokit = new Octokit({ 
-      auth: token,
-      userAgent: "D2Launcher Stats Collector"
-    });
-    
-    // Получаем все релизы
-    console.log("Fetching releases...");
-    const releases = await octokit.paginate("GET /repos/{owner}/{repo}/releases", {
-      owner,
-      repo,
-      per_page: 100
-    });
-    
-    console.log(`Found ${releases.length} releases`);
-    
-    // Формируем статистику
-    const stats = {
-      updated_at: new Date().toISOString(),
-      total_releases: releases.length,
-      total_downloads: 0,
-      releases: []
-    };
-    
-    for (const release of releases) {
-      console.log(`Processing release: ${release.tag_name}`);
-      const releaseStats = {
-        id: release.id,
-        tag_name: release.tag_name,
-        created_at: release.created_at,
-        downloads: 0,
-        assets: []
-      };
-      
-      // Считаем скачивания для каждого ассета
-      for (const asset of release.assets || []) {
-        console.log(`- Asset: ${asset.name} (${asset.download_count} downloads)`);
-        releaseStats.downloads += asset.download_count;
-        stats.total_downloads += asset.download_count;
+    # Обработка ассетов
+    for asset_row in $(echo "$assets" | jq -r '.[] | @base64'); do
+        asset=$(echo "$asset_row" | base64 --decode | jq '.')
+        name=$(echo "$asset" | jq -r '.name')
+        downloads=$(echo "$asset" | jq -r '.download_count')
         
-        releaseStats.assets.push({
-          name: asset.name,
-          downloads: asset.download_count,
-          content_type: asset.content_type
-        });
-      }
-      
-      stats.releases.push(releaseStats);
-    }
+        release_stats=$(echo "$release_stats" | jq \
+            --arg name "$name" \
+            --arg downloads "$downloads" \
+            --arg content_type "$(echo "$asset" | jq -r '.content_type')" \
+            '.downloads += ($downloads | tonumber) | 
+             .assets += [{
+                 name: $name,
+                 downloads: ($downloads | tonumber),
+                 content_type: $content_type
+             }]')
+    done
     
-    // Сохраняем в файл
-    const filePath = path.join(process.cwd(), "stats.json");
-    fs.writeFileSync(filePath, JSON.stringify(stats, null, 2));
-    console.log(`Statistics saved to ${filePath}`);
-    console.log(`Total downloads: ${stats.total_downloads}`);
-    
-    return true;
-  } catch (error) {
-    console.error("Error collecting stats:", error);
-    // Создаем пустой файл в случае ошибки
-    const filePath = path.join(process.cwd(), "stats.json");
-    fs.writeFileSync(filePath, JSON.stringify({
-      error: error.message,
-      updated_at: new Date().toISOString()
-    }, null, 2));
-    console.log("Created empty stats.json with error details");
-    return false;
-  }
-}
+    # Обновление общей статистики
+    total_downloads=$(echo "$release_stats" | jq '.downloads')
+    stats=$(echo "$stats" | jq \
+        --argjson release_stats "$release_stats" \
+        '.total_downloads += $total_downloads |
+         .releases += [$release_stats]')
+done
 
-// Запуск основной функции
-main().then(success => {
-  process.exit(success ? 0 : 1);
-});
+# Сохранение результатов
+echo "$stats" > stats.json
+echo "Statistics saved to stats.json"
