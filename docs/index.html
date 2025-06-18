@@ -63,11 +63,20 @@
             margin-bottom: 10px;
         }
         
-        .card p.value {
+        .card .value {
             font-size: 2rem;
             font-weight: bold;
             margin: 10px 0;
             color: var(--primary);
+        }
+        
+        .freshness {
+            font-size: 0.9rem;
+            display: inline-block;
+            padding: 3px 8px;
+            border-radius: 12px;
+            background: #e1f5fe;
+            color: #0288d1;
         }
         
         .chart-container {
@@ -77,12 +86,12 @@
             box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
             margin-bottom: 30px;
             position: relative;
-            height: 400px; /* Фиксированная высота */
+            height: 400px;
         }
         
         .chart-wrapper {
             position: relative;
-            height: 350px; /* Высота графика */
+            height: 350px;
             width: 100%;
         }
         
@@ -195,7 +204,19 @@
             font-size: 0.9rem;
             color: #666;
         }
-
+        
+        .trend-up {
+            color: #27ae60;
+        }
+        
+        .trend-down {
+            color: #e74c3c;
+        }
+        
+        .hidden {
+            display: none;
+        }
+        
         .metrics-explained {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
@@ -229,18 +250,6 @@
             margin-top: 0;
             color: #2c3e50;
         }
-        
-        .trend-up {
-            color: #27ae60;
-        }
-        
-        .trend-down {
-            color: #e74c3c;
-        }
-        
-        .hidden {
-            display: none;
-        }
     </style>
 </head>
 <body>
@@ -262,8 +271,8 @@
                 </div>
                 <div class="card">
                     <h3>Last Updated</h3>
-                    <p id="last-updated">-</p>
-                    <p id="freshness-indicator"></p>
+                    <p class="value" id="last-updated">-</p>
+                    <span id="freshness-indicator" class="freshness"></span>
                 </div>
             </div>
         </div>
@@ -347,7 +356,7 @@
             const updatedDate = new Date(data.updated_at);
             document.getElementById('last-updated').textContent = updatedDate.toLocaleString();
             
-            // Рассчитываем свежесть данных
+            // Calculate freshness
             const now = new Date();
             const hoursDiff = Math.abs(now - updatedDate) / 36e5;
             
@@ -437,119 +446,121 @@
         }
         
         function compareVersions() {
-    if (!statsData) return;
-    
-    const v1 = document.getElementById('version1').value;
-    const v2 = document.getElementById('version2').value;
-    
-    const release1 = statsData.releases.find(r => r.tag_name === v1);
-    const release2 = statsData.releases.find(r => r.tag_name === v2);
-    
-    if (!release1 || !release2) {
-        document.getElementById('comparison-result').innerHTML = '<p>One or both versions not found</p>';
-        return;
-    }
-    
-    const downloads1 = release1.downloads;
-    const downloads2 = release2.downloads;
-    
-    // Calculate metrics
-    let ratio = "N/A";
-    let improvement = "N/A";
-    let trendClass = "";
-    let changeValue = 0;
-    
-    if (downloads1 > 0) {
-        ratio = (downloads2 / downloads1).toFixed(2);
-        changeValue = ((downloads2 - downloads1) / downloads1 * 100);
-        improvement = `${Math.abs(changeValue).toFixed(1)}% ${changeValue >= 0 ? 'increase' : 'decrease'}`;
-        trendClass = changeValue >= 0 ? "trend-up" : "trend-down";
-    }
-    
-    // Calculate days between releases
-    const date1 = new Date(release1.created_at);
-    const date2 = new Date(release2.created_at);
-    const timeDiff = Math.abs(date2 - date1);
-    const daysDiff = Math.ceil(timeDiff / (1000 * 60 * 60 * 24));
-    
-    // Format result
-    document.getElementById('comparison-result').innerHTML = `
-        <div class="version-cards">
-            <div class="version-card">
-                <h4>${v1}</h4>
-                <p><strong>Release Date:</strong> ${date1.toLocaleDateString()}</p>
-                <div class="download-count">${downloads1}</div>
-                <p><strong>Assets:</strong></p>
-                <ul>
-                    ${release1.assets.map(a => `<li>${a.name}: ${a.downloads}</li>`).join('')}
-                </ul>
-            </div>
+            if (!statsData) return;
             
-            <div class="version-card">
-                <h4>${v2}</h4>
-                <p><strong>Release Date:</strong> ${date2.toLocaleDateString()}</p>
-                <div class="download-count">${downloads2}</div>
-                <p><strong>Assets:</strong></p>
-                <ul>
-                    ${release2.assets.map(a => `<li>${a.name}: ${a.downloads}</li>`).join('')}
-                </ul>
-            </div>
-        </div>
+            const v1 = document.getElementById('version1').value;
+            const v2 = document.getElementById('version2').value;
+            
+            const release1 = statsData.releases.find(r => r.tag_name === v1);
+            const release2 = statsData.releases.find(r => r.tag_name === v2);
+            
+            if (!release1 || !release2) {
+                document.getElementById('comparison-result').innerHTML = '<p>One or both versions not found</p>';
+                return;
+            }
+            
+            const downloads1 = release1.downloads;
+            const downloads2 = release2.downloads;
+            
+            // Calculate metrics
+            let ratio = "N/A";
+            let improvement = "N/A";
+            let trendClass = "";
+            let changeValue = 0;
+            
+            if (downloads1 > 0) {
+                ratio = (downloads2 / downloads1).toFixed(2);
+                changeValue = ((downloads2 - downloads1) / downloads1 * 100);
+                improvement = `${Math.abs(changeValue).toFixed(1)}% ${changeValue >= 0 ? 'increase' : 'decrease'}`;
+                trendClass = changeValue >= 0 ? "trend-up" : "trend-down";
+            }
+            
+            // Calculate days between releases
+            const date1 = new Date(release1.created_at);
+            const date2 = new Date(release2.created_at);
+            const timeDiff = Math.abs(date2 - date1);
+            const daysDiff = Math.ceil(timeDiff / (1000 * 60 * 60 * 24));
+            
+            // Format result
+            document.getElementById('comparison-result').innerHTML = `
+                <div class="version-cards">
+                    <div class="version-card">
+                        <h4>${v1}</h4>
+                        <p><strong>Release Date:</strong> ${date1.toLocaleDateString()}</p>
+                        <div class="download-count">${downloads1}</div>
+                        <p><strong>Assets:</strong></p>
+                        <ul>
+                            ${release1.assets.map(a => `<li>${a.name}: ${a.downloads}</li>`).join('')}
+                        </ul>
+                    </div>
+                    
+                    <div class="version-card">
+                        <h4>${v2}</h4>
+                        <p><strong>Release Date:</strong> ${date2.toLocaleDateString()}</p>
+                        <div class="download-count">${downloads2}</div>
+                        <p><strong>Assets:</strong></p>
+                        <ul>
+                            ${release2.assets.map(a => `<li>${a.name}: ${a.downloads}</li>`).join('')}
+                        </ul>
+                    </div>
+                </div>
+                
+                <div class="comparison-metrics">
+                    <h3>Version Comparison Metrics</h3>
+                    
+                    <div class="metrics-explained">
+                        <div class="metric-explanation">
+                            <h4>Popularity Ratio (${v1} → ${v2})</h4>
+                            <p>Shows how many times the newer version ${v2} is more popular than ${v1}. 
+                            Value > 1 = more popular, < 1 = less popular.</p>
+                            <div class="metric-value ${trendClass}">${ratio}</div>
+                        </div>
+                        
+                        <div class="metric-explanation">
+                            <h4>Download Difference</h4>
+                            <p>Absolute difference in downloads between versions.</p>
+                            <div class="metric-value ${trendClass}">${downloads2 - downloads1}</div>
+                        </div>
+                        
+                        <div class="metric-explanation">
+                            <h4>Change</h4>
+                            <p>Percentage change from ${v1} to ${v2}.</p>
+                            <div class="metric-value ${trendClass}">${improvement}</div>
+                        </div>
+                        
+                        <div class="metric-explanation">
+                            <h4>Days Between Releases</h4>
+                            <p>Time passed between the releases.</p>
+                            <div class="metric-value">${daysDiff} days</div>
+                        </div>
+                    </div>
+                    
+                    <div class="conclusion">
+                        <h4>Interpretation:</h4>
+                        <p>${getComparisonConclusion(downloads1, downloads2, daysDiff, changeValue, v1, v2)}</p>
+                    </div>
+                </div>
+            `;
+        }
         
-        <div class="comparison-metrics">
-            <h3>Version Comparison Metrics</h3>
+        function getComparisonConclusion(d1, d2, days, change, v1, v2) {
+            if (d1 === 0 || d2 === 0) {
+                return "Insufficient data for meaningful comparison. One of the versions has zero downloads.";
+            }
             
-            <div class="metrics-explained">
-                <div class="metric-explanation">
-                    <h4>Popularity Ratio (${v2}/${v1})</h4>
-                    <p>Shows how many times version ${v2} is more popular than ${v1}. 
-                    Value > 1 = more popular, < 1 = less popular.</p>
-                    <div class="metric-value ${trendClass}">${ratio}</div>
-                </div>
-                
-                <div class="metric-explanation">
-                    <h4>Download Difference</h4>
-                    <p>Absolute difference in downloads between versions.</p>
-                    <div class="metric-value ${trendClass}">${downloads2 - downloads1}</div>
-                </div>
-                
-                <div class="metric-explanation">
-                    <h4>Change</h4>
-                    <p>Percentage change from ${v1} to ${v2}.</p>
-                    <div class="metric-value ${trendClass}">${improvement}</div>
-                </div>
-                
-                <div class="metric-explanation">
-                    <h4>Days Between Releases</h4>
-                    <p>Time passed between the releases.</p>
-                    <div class="metric-value">${daysDiff} days</div>
-                </div>
-            </div>
-            
-            <div class="conclusion">
-                <h4>Interpretation:</h4>
-                <p>${getComparisonConclusion(downloads1, downloads2, daysDiff, changeValue)}</p>
-            </div>
-        </div>
-    `;
-}
-
-function getComparisonConclusion(d1, d2, days, change) {
-    if (d1 === 0 || d2 === 0) return "Insufficient data for meaningful comparison";
-    
-    if (change > 50) {
-        return `Version ${v2} is significantly more popular than ${v1} - great adoption rate!`;
-    }
-    else if (change > 0) {
-        return `Version ${v2} shows positive growth compared to ${v1}`;
-    }
-    else if (change === 0) {
-        return "Both versions have similar popularity";
-    }
-    else {
-        return `Version ${v2} has lower adoption than ${v1} - consider investigating why`;
-    }
-}
+            if (change > 50) {
+                return `Version ${v2} is significantly more popular than ${v1} - great adoption rate!`;
+            }
+            else if (change > 0) {
+                return `Version ${v2} shows positive growth compared to ${v1}.`;
+            }
+            else if (change === 0) {
+                return "Both versions have similar popularity.";
+            }
+            else {
+                return `Version ${v2} has lower adoption than ${v1} - consider investigating why.`;
+            }
+        }
     </script>
 </body>
 </html>
