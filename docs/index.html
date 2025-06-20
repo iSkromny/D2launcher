@@ -375,9 +375,9 @@
             const now = new Date();
             const hoursDiff = Math.abs(now - updatedDate) / 36e5;
             
-            let freshness = "🟢 Актуальные";
-            if (hoursDiff > 24) freshness = "🟡 Устаревают (обновлено >24ч назад)";
-            if (hoursDiff > 72) freshness = "🔴 Устарели (обновлено >72ч назад)";
+            let freshness = "🟢 Актуально";
+            if (hoursDiff > 24) freshness = "🟡 Устаревает (обновлено >24ч назад)";
+            if (hoursDiff > 72) freshness = "🔴 Устарело (обновлено >72ч назад)";
             
             document.getElementById('freshness-indicator').textContent = freshness;
         }
