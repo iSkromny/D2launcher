@@ -1,5 +1,5 @@
 {
-  "updated_at": "2025-06-21T08:31:04Z",
+  "updated_at": "2025-06-21T09:26:40Z",
   "total_releases": 2,
   "total_downloads": 24,
   "releases": [
@@ -30,7 +30,7 @@
   ],
   "daily_downloads": {
     "2025-06-21": {
-      "D2launcher.exe": 1
+      "D2launcher.exe": 0
     }
   }
 }
