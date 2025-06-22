@@ -1,0 +1,18 @@
+{
+  "fullMod": {
+    "d2mm": {
+      "name": "d2mm.ru (Рекомендуется)",
+      "url": "auto" 
+    },
+    "github": {
+      "name": "GitHub (Альтернатива)",
+      "url": "https://github.com/iSkromny/D2launcher/releases/download/smns2.3_fix1/D2Slasher2.3+fix1_lobby.zip"
+    }
+  },
+  "patch": {
+    "d2mm": {
+      "name": "d2mm.ru",
+      "url": "auto"
+    }
+  }
+}
