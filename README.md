@@ -9,7 +9,7 @@ Disciples 2 Launcher and Template Updates
 - [x] сolor indication of template statuses
 - [x] add d2quicksave
 - [x] ability to check for mss update
-- [x] add support for MNS version
+- [ ] add support for MNS version (disabled)
 - [x] added launcher update about button
 - [x] added logging
 - [x] added the ability to download the full version of the game
