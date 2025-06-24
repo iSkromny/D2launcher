@@ -384,40 +384,40 @@
         
         function renderChart(data) {
             const ctx = document.getElementById('releasesChart').getContext('2d');
-            const dataLabelsPlugin = {
-                id: 'datalabels',
-                afterDraw: (chart) => {
-                    const ctx = chart.ctx;
-                    ctx.font = 'bold 12px Arial';
-                    ctx.textAlign = 'center';
-                    ctx.textBaseline = 'bottom';
-                    ctx.fillStyle = '#fff';
+            //const dataLabelsPlugin = {
+              //  id: 'datalabels',
+                //afterDraw: (chart) => {
+                  //  const ctx = chart.ctx;
+                  //  ctx.font = 'bold 12px Arial';
+                  //  ctx.textAlign = 'center';
+                  //  ctx.textBaseline = 'bottom';
+                   // ctx.fillStyle = '#fff';
             
-                    chart.data.datasets.forEach((dataset, datasetIndex) => {
-                        const meta = chart.getDatasetMeta(datasetIndex);
-                        if (!meta.hidden) {
-                            meta.data.forEach((element, index) => {
-                                const data = dataset.data[index];
+                    //chart.data.datasets.forEach((dataset, datasetIndex) => {
+                      //  const meta = chart.getDatasetMeta(datasetIndex);
+                        //if (!meta.hidden) {
+                          //  meta.data.forEach((element, index) => {
+                            //    const data = dataset.data[index];
                                 // Пропускаем отрисовку для нулевых значений
-                                if (data === 0) return;
+                              //  if (data === 0) return;
                                 
-                                const x = element.x;
-                                const y = element.y;
+                               // const x = element.x;
+                                //const y = element.y;
                                 
                                 // Для высоких столбцов рисуем текст внутри
-                                if (element.height > 30) {
-                                    ctx.fillText(data, x, y - 10);
-                                } 
+                                //if (element.height > 30) {
+                                  //  ctx.fillText(data, x, y - 10);
+                                //} 
                                 // Для низких столбцов - над столбцом
-                                else {
-                                    ctx.fillStyle = '#333';
-                                    ctx.fillText(data, x, y - 5);
-                                }
-                            });
-                        }
-                    });
-                }
-            };
+                               // else {
+                                 //   ctx.fillStyle = '#333';
+                                   // ctx.fillText(data, x, y - 5);
+                               // }
+                           // });
+                       // }
+                   // });
+               // }
+            //};
             
             // Destroy previous chart if exists
             if (releasesChart) {
