@@ -409,14 +409,6 @@
                 options: {
                     responsive: true,
                     maintainAspectRatio: false,
-                    layout: {
-                        padding: {
-                            left: 10,
-                            right: 10,
-                            top: 10,
-                            bottom: 30 // Увеличиваем отступ снизу для подписи
-                        }
-                    },
                     plugins: {
                         legend: {
                             display: false
@@ -428,10 +420,6 @@
                             title: {
                                 display: true,
                                 text: 'Загрузки'
-                                font: {
-                                    size: 16,
-                                    weight: 'bold'
-                                },
                             },
                             ticks: {
                                 precision: 0
@@ -440,22 +428,7 @@
                         x: {
                             title: {
                                 display: true,
-                                text: 'Версии',
-                                font: {
-                                    size: 18,
-                                    weight: 'bold'
-                                },
-                                padding: {top: 10, bottom: 10}
-                            },
-                            ticks: {
-                                font: {
-                                    size: 14
-                                },
-                                //maxRotation: 45,
-                                //minRotation: 45,
-                                padding: 5,
-                                autoSkip: true,
-                                maxTicksLimit: 20
+                                text: 'Версия'
                             }
                         }
                     }
