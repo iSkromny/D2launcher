@@ -384,40 +384,6 @@
         
         function renderChart(data) {
             const ctx = document.getElementById('releasesChart').getContext('2d');
-            //const dataLabelsPlugin = {
-              //  id: 'datalabels',
-                //afterDraw: (chart) => {
-                  //  const ctx = chart.ctx;
-                  //  ctx.font = 'bold 12px Arial';
-                  //  ctx.textAlign = 'center';
-                  //  ctx.textBaseline = 'bottom';
-                   // ctx.fillStyle = '#fff';
-            
-                    //chart.data.datasets.forEach((dataset, datasetIndex) => {
-                      //  const meta = chart.getDatasetMeta(datasetIndex);
-                        //if (!meta.hidden) {
-                          //  meta.data.forEach((element, index) => {
-                            //    const data = dataset.data[index];
-                                // Пропускаем отрисовку для нулевых значений
-                              //  if (data === 0) return;
-                                
-                               // const x = element.x;
-                                //const y = element.y;
-                                
-                                // Для высоких столбцов рисуем текст внутри
-                                //if (element.height > 30) {
-                                  //  ctx.fillText(data, x, y - 10);
-                                //} 
-                                // Для низких столбцов - над столбцом
-                               // else {
-                                 //   ctx.fillStyle = '#333';
-                                   // ctx.fillText(data, x, y - 5);
-                               // }
-                           // });
-                       // }
-                   // });
-               // }
-            //};
             
             // Destroy previous chart if exists
             if (releasesChart) {
@@ -430,7 +396,6 @@
             
             releasesChart = new Chart(ctx, {
                 type: 'bar',
-                plugins: [dataLabelsPlugin], // Добавляем наш плагин
                 data: {
                     labels: labels,
                     datasets: [{
@@ -446,14 +411,13 @@
                     maintainAspectRatio: false,
                     layout: {
                         padding: {
-                            top: 20, // Добавляем место для подписей сверху
-                            bottom: 40 // Увеличиваем для названий версий
+                            left: 10,
+                            right: 10,
+                            top: 10,
+                            bottom: 30 // Увеличиваем отступ снизу для подписи
                         }
                     },
                     plugins: {
-                        tooltip: {
-                            enabled: true // Оставляем тултипы для доп. информации
-                        },
                         legend: {
                             display: false
                         }
@@ -463,19 +427,14 @@
                             beginAtZero: true,
                             title: {
                                 display: true,
-                                text: 'Загрузки',
+                                text: 'Загрузки'
                                 font: {
-                                    size: 18
-                                }
+                                    size: 16,
+                                    weight: 'bold'
+                                },
                             },
                             ticks: {
-                                precision: 0,
-                                callback: function(value) {
-                                    if (value % 5 === 0) return value; // Показываем только кратные 5
-                                }
-                            },
-                            grid: {
-                                drawTicks: false // Убираем мелкие линии
+                                precision: 0
                             }
                         },
                         x: {
@@ -486,25 +445,23 @@
                                     size: 18,
                                     weight: 'bold'
                                 },
-                                padding: {
-                                    top: 10,
-                                    bottom: 10
-                                }
+                                padding: {top: 10, bottom: 10}
                             },
                             ticks: {
                                 font: {
-                                    size: 13
+                                    size: 14
                                 },
                                 //maxRotation: 45,
                                 //minRotation: 45,
                                 padding: 5,
                                 autoSkip: true,
-                                maxTicksLimit: 10
+                                maxTicksLimit: 20
                             }
                         }
                     }
                 }
             });
+        }
         
         function populateVersionSelects(data) {
             const select1 = document.getElementById('version1');
