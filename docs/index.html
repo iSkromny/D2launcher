@@ -384,24 +384,53 @@
         
         function renderChart(data) {
             const ctx = document.getElementById('releasesChart').getContext('2d');
+            const dataLabelsPlugin = {
+                id: 'datalabels',
+                afterDraw: (chart) => {
+                    const ctx = chart.ctx;
+                    ctx.font = 'bold 12px Arial';
+                    ctx.textAlign = 'center';
+                    ctx.textBaseline = 'bottom';
+                    ctx.fillStyle = '#fff';
+            
+                    chart.data.datasets.forEach((dataset, datasetIndex) => {
+                        const meta = chart.getDatasetMeta(datasetIndex);
+                        if (!meta.hidden) {
+                            meta.data.forEach((element, index) => {
+                                const data = dataset.data[index];
+                                // Пропускаем отрисовку для нулевых значений
+                                if (data === 0) return;
+                                
+                                const x = element.x;
+                                const y = element.y;
+                                
+                                // Для высоких столбцов рисуем текст внутри
+                                if (element.height > 30) {
+                                    ctx.fillText(data, x, y - 10);
+                                } 
+                                // Для низких столбцов - над столбцом
+                                else {
+                                    ctx.fillStyle = '#333';
+                                    ctx.fillText(data, x, y - 5);
+                                }
+                            });
+                        }
+                    });
+                }
+            };
             
             // Destroy previous chart if exists
             if (releasesChart) {
                 releasesChart.destroy();
             }
             
-            // Prepare chart data - shorten long labels
-            const labels = data.releases.map(r => {
-                if (r.tag_name.length > 12) {
-                    return r.tag_name.substring(0, 10) + '..';
-                }
-                return r.tag_name;
-            });
-            
+            // Prepare chart data
+            const labels = data.releases.map(r => r.tag_name);
             const downloads = data.releases.map(r => r.downloads);
             
             releasesChart = new Chart(ctx, {
                 type: 'bar',
+                plugins: [dataLabelsPlugin], // Добавляем наш плагин
                 data: {
                     labels: labels,
                     datasets: [{
@@ -417,18 +446,16 @@
                     maintainAspectRatio: false,
                     layout: {
                         padding: {
-                            left: 10,
-                            right: 10,
-                            top: 20,
-                            bottom: 40
+                            top: 20, // Добавляем место для подписей сверху
+                            bottom: 40 // Увеличиваем для названий версий
                         }
                     },
                     plugins: {
+                        tooltip: {
+                            enabled: true // Оставляем тултипы для доп. информации
+                        },
                         legend: {
                             display: false
-                        },
-                        tooltip: {
-                            enabled: true
                         }
                     },
                     scales: {
@@ -438,12 +465,17 @@
                                 display: true,
                                 text: 'Загрузки',
                                 font: {
-                                    size: 16,
-                                    weight: 'bold'
+                                    size: 18
                                 }
                             },
                             ticks: {
-                                precision: 0
+                                precision: 0,
+                                callback: function(value) {
+                                    if (value % 5 === 0) return value; // Показываем только кратные 5
+                                }
+                            },
+                            grid: {
+                                drawTicks: false // Убираем мелкие линии
                             }
                         },
                         x: {
@@ -461,7 +493,7 @@
                             },
                             ticks: {
                                 font: {
-                                    size: 14
+                                    size: 13
                                 },
                                 //maxRotation: 45,
                                 //minRotation: 45,
@@ -470,40 +502,9 @@
                                 maxTicksLimit: 10
                             }
                         }
-                    },
-                    // Исправленная анимация с подписями
-                    animation: {
-                        onComplete: function() {
-                            const ctx = this.ctx;
-                            ctx.font = 'bold 12px Arial';
-                            ctx.textAlign = 'center';
-                            ctx.textBaseline = 'bottom';
-                            
-                            this.data.datasets.forEach((dataset, i) => {
-                                const meta = this.getDatasetMeta(i);
-                                meta.data.forEach((bar, index) => {
-                                    const data = dataset.data[index];
-                                    
-                                    // Всегда показываем значения больше 0
-                                    if (data > 0) {
-                                        // Для столбцов высотой больше 20px - белый текст внутри
-                                        if (bar.height > 20) {
-                                            ctx.fillStyle = '#fff';
-                                            ctx.fillText(data, bar.x, bar.y - 5);
-                                        } 
-                                        // Для маленьких столбцов - тёмный текст над столбцом
-                                        else {
-                                            ctx.fillStyle = '#2c3e50';
-                                            ctx.fillText(data, bar.x, bar.y - 5);
-                                        }
-                                    }
-                                });
-                            });
-                        }
                     }
                 }
             });
-        }
         
         function populateVersionSelects(data) {
             const select1 = document.getElementById('version1');
