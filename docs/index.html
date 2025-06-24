@@ -409,6 +409,14 @@
                 options: {
                     responsive: true,
                     maintainAspectRatio: false,
+                    layout: {
+                        padding: {
+                            left: 10,
+                            right: 10,
+                            top: 10,
+                            bottom: 30 // Увеличиваем отступ снизу для подписи
+                        }
+                    },
                     plugins: {
                         legend: {
                             display: false
@@ -428,7 +436,22 @@
                         x: {
                             title: {
                                 display: true,
-                                text: 'Версия'
+                                text: 'Версии',
+                                font: {
+                                    size: 14,
+                                    weight: 'bold'
+                                },
+                                padding: {top: 10, bottom: 10}
+                            },
+                            ticks: {
+                                font: {
+                                    size: 10
+                                },
+                                maxRotation: 45,
+                                minRotation: 45,
+                                padding: 5,
+                                autoSkip: true,
+                                maxTicksLimit: 20
                             }
                         }
                     }
