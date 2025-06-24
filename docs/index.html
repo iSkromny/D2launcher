@@ -485,7 +485,7 @@
                                 meta.data.forEach((bar, index) => {
                                     const data = dataset.data[index];
                                     if (data > 0) { // Не показывать для нулевых значений
-                                        ctx.fillStyle = bar.height > 30 ? '#fff' : '#333';
+                                        ctx.fillStyle = bar.height > 20 ? '#fff' : '#333';
                                         ctx.fillText(data, bar.x, bar.y - 5);
                                     }
                                 });
