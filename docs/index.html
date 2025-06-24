@@ -429,9 +429,7 @@
                         },
                         tooltip: {
                             enabled: true
-                        },
-                        // Простые встроенные подписи данных
-                        datalabels: false // Отключаем неработающий плагин
+                        }
                     },
                     scales: {
                         y: {
@@ -440,7 +438,8 @@
                                 display: true,
                                 text: 'Загрузки',
                                 font: {
-                                    size: 18
+                                    size: 16,
+                                    weight: 'bold'
                                 }
                             },
                             ticks: {
@@ -462,17 +461,17 @@
                             },
                             ticks: {
                                 font: {
-                                    size: 13
+                                    size: 14
                                 },
-                                maxRotation: 45,
-                                minRotation: 45,
+                                //maxRotation: 45,
+                                //minRotation: 45,
                                 padding: 5,
                                 autoSkip: true,
                                 maxTicksLimit: 10
                             }
                         }
                     },
-                    // Добавляем подписи значений на столбцах
+                    // Исправленная анимация с подписями
                     animation: {
                         onComplete: function() {
                             const ctx = this.ctx;
@@ -484,9 +483,19 @@
                                 const meta = this.getDatasetMeta(i);
                                 meta.data.forEach((bar, index) => {
                                     const data = dataset.data[index];
-                                    if (data > 0) { // Не показывать для нулевых значений
-                                        ctx.fillStyle = bar.height > 20 ? '#fff' : '#333';
-                                        ctx.fillText(data, bar.x, bar.y - 5);
+                                    
+                                    // Всегда показываем значения больше 0
+                                    if (data > 0) {
+                                        // Для столбцов высотой больше 20px - белый текст внутри
+                                        if (bar.height > 20) {
+                                            ctx.fillStyle = '#fff';
+                                            ctx.fillText(data, bar.x, bar.y - 5);
+                                        } 
+                                        // Для маленьких столбцов - тёмный текст над столбцом
+                                        else {
+                                            ctx.fillStyle = '#2c3e50';
+                                            ctx.fillText(data, bar.x, bar.y - 5);
+                                        }
                                     }
                                 });
                             });
