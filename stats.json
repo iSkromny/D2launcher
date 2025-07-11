@@ -1,17 +1,17 @@
 {
-  "updated_at": "2025-07-11T09:29:16Z",
+  "updated_at": "2025-07-11T10:29:23Z",
   "total_releases": 4,
-  "total_downloads": 75,
+  "total_downloads": 78,
   "releases": [
     {
       "id": 226920033,
       "tag_name": "v1.2.1.0",
       "created_at": "2025-06-22T21:07:12Z",
-      "downloads": 46,
+      "downloads": 47,
       "assets": [
         {
           "name": "D2launcher.exe",
-          "downloads": 46
+          "downloads": 47
         }
       ]
     },
@@ -19,11 +19,11 @@
       "id": 226915472,
       "tag_name": "smns2.3_fix1",
       "created_at": "2025-06-22T20:26:38Z",
-      "downloads": 4,
+      "downloads": 6,
       "assets": [
         {
           "name": "D2Slasher2.3+fix1_lobby.zip",
-          "downloads": 4
+          "downloads": 6
         }
       ]
     },
@@ -54,8 +54,8 @@
   ],
   "daily_downloads": {
     "2025-07-11": {
-      "D2launcher.exe": 0,
-      "D2Slasher2.3+fix1_lobby.zip": 0
+      "D2launcher.exe": 1,
+      "D2Slasher2.3+fix1_lobby.zip": 2
     }
   }
 }
