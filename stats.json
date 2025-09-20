@@ -1,17 +1,17 @@
 {
-  "updated_at": "2025-09-20T12:47:22Z",
+  "updated_at": "2025-09-20T13:26:14Z",
   "total_releases": 5,
-  "total_downloads": 174,
+  "total_downloads": 175,
   "releases": [
     {
       "id": 246719458,
       "tag_name": "v1.3.0.0",
       "created_at": "2025-09-12T08:31:23Z",
-      "downloads": 59,
+      "downloads": 60,
       "assets": [
         {
           "name": "D2launcher.exe",
-          "downloads": 59
+          "downloads": 60
         }
       ]
     },
