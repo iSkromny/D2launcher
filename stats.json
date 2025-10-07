@@ -1,17 +1,17 @@
 {
-  "updated_at": "2025-10-07T10:26:37Z",
+  "updated_at": "2025-10-07T11:20:07Z",
   "total_releases": 4,
-  "total_downloads": 273,
+  "total_downloads": 274,
   "releases": [
     {
       "id": 246719458,
       "tag_name": "v1.3.0.0",
       "created_at": "2025-09-12T08:31:23Z",
-      "downloads": 148,
+      "downloads": 149,
       "assets": [
         {
           "name": "D2launcher.exe",
-          "downloads": 148
+          "downloads": 149
         }
       ]
     },
@@ -54,7 +54,7 @@
   ],
   "daily_downloads": {
     "2025-10-07": {
-      "D2launcher.exe": 0,
+      "D2launcher.exe": 1,
       "D2Slasher2.3+fix2.zip": 0
     }
   }
