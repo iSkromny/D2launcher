@@ -1,7 +1,7 @@
 {
-  "updated_at": "2025-10-25T04:28:08Z",
+  "updated_at": "2025-10-25T05:23:19Z",
   "total_releases": 4,
-  "total_downloads": 346,
+  "total_downloads": 348,
   "releases": [
     {
       "id": 246719458,
@@ -19,11 +19,11 @@
       "id": 232190362,
       "tag_name": "smns2.3_fix2",
       "created_at": "2025-07-14T11:24:12Z",
-      "downloads": 42,
+      "downloads": 44,
       "assets": [
         {
           "name": "D2Slasher2.3+fix2.zip",
-          "downloads": 42
+          "downloads": 44
         }
       ]
     },
