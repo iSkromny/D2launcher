@@ -1,5 +1,5 @@
 {
-  "updated_at": "2025-10-26T20:26:48Z",
+  "updated_at": "2025-10-26T21:21:26Z",
   "total_releases": 4,
   "total_downloads": 372,
   "releases": [
@@ -54,8 +54,8 @@
   ],
   "daily_downloads": {
     "2025-10-26": {
-      "D2launcher.exe": 2,
-      "D2Slasher2.3+fix2.zip": 2
+      "D2launcher.exe": 0,
+      "D2Slasher2.3+fix2.zip": 0
     }
   }
 }
