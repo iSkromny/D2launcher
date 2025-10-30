@@ -1,12 +1,12 @@
 {
-  "updated_at": "2025-10-30T10:28:38Z",
+  "updated_at": "2025-10-30T10:38:09Z",
   "total_releases": 5,
   "total_downloads": 395,
   "releases": [
     {
       "id": 258408612,
-      "tag_name": "",
-      "created_at": "2025-10-30T09:27:36Z",
+      "tag_name": "smns2.4_fix2",
+      "created_at": "2025-10-30T10:28:40Z",
       "downloads": 0,
       "assets": [
         {
