@@ -1,17 +1,17 @@
 {
-  "updated_at": "2025-11-12T21:24:48Z",
+  "updated_at": "2025-11-12T22:25:17Z",
   "total_releases": 4,
-  "total_downloads": 390,
+  "total_downloads": 391,
   "releases": [
     {
       "id": 258408612,
       "tag_name": "smns2.4_fix2",
       "created_at": "2025-10-30T10:28:40Z",
-      "downloads": 9,
+      "downloads": 10,
       "assets": [
         {
           "name": "D2Slasher2_4_fix2.7z",
-          "downloads": 9
+          "downloads": 10
         }
       ]
     },
@@ -54,7 +54,7 @@
   ],
   "daily_downloads": {
     "2025-11-12": {
-      "D2Slasher2_4_fix2.7z": 0,
+      "D2Slasher2_4_fix2.7z": 1,
       "D2launcher.exe": 0,
       "D2Slasher2.3+fix2.zip": 0
     }
