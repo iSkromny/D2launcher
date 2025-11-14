@@ -1,7 +1,7 @@
 {
-  "updated_at": "2025-11-14T19:21:04Z",
+  "updated_at": "2025-11-14T20:29:22Z",
   "total_releases": 6,
-  "total_downloads": 333,
+  "total_downloads": 334,
   "releases": [
     {
       "id": 262451379,
@@ -55,11 +55,11 @@
       "id": 246719458,
       "tag_name": "v1.3.0.0",
       "created_at": "2025-09-12T08:31:23Z",
-      "downloads": 248,
+      "downloads": 249,
       "assets": [
         {
           "name": "D2launcher.exe",
-          "downloads": 248
+          "downloads": 249
         }
       ]
     },
@@ -82,7 +82,7 @@
       "D2launcher_heavy.zip": 0,
       "slasher_mns_2_4_004.7z": 0,
       "D2Slasher2_4_fix2.7z": 0,
-      "D2launcher.exe": 0
+      "D2launcher.exe": 1
     }
   }
 }
