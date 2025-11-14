@@ -1,5 +1,5 @@
 {
-  "updated_at": "2025-11-13T23:24:57Z",
+  "updated_at": "2025-11-14T02:03:58Z",
   "total_releases": 5,
   "total_downloads": 392,
   "releases": [
@@ -65,7 +65,7 @@
     }
   ],
   "daily_downloads": {
-    "2025-11-13": {
+    "2025-11-14": {
       "slasher_mns_2_4_004.7z": 0,
       "D2Slasher2_4_fix2.7z": 0,
       "D2launcher.exe": 0,
