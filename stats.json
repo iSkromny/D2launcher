@@ -1,5 +1,5 @@
 {
-  "updated_at": "2025-11-14T15:24:23Z",
+  "updated_at": "2025-11-14T16:34:38Z",
   "total_releases": 6,
   "total_downloads": 333,
   "releases": [
@@ -78,11 +78,11 @@
   ],
   "daily_downloads": {
     "2025-11-14": {
-      "D2launcher_light.zip": 1,
-      "D2launcher_heavy.zip": 1,
+      "D2launcher_light.zip": 0,
+      "D2launcher_heavy.zip": 0,
       "slasher_mns_2_4_004.7z": 0,
       "D2Slasher2_4_fix2.7z": 0,
-      "D2launcher.exe": 1
+      "D2launcher.exe": 0
     }
   }
 }
