@@ -1,17 +1,17 @@
 {
-  "updated_at": "2025-11-15T17:19:31Z",
+  "updated_at": "2025-11-15T18:33:12Z",
   "total_releases": 6,
-  "total_downloads": 335,
+  "total_downloads": 336,
   "releases": [
     {
       "id": 262451379,
       "tag_name": "D2launcher_light",
       "created_at": "2025-11-14T13:34:40Z",
-      "downloads": 1,
+      "downloads": 2,
       "assets": [
         {
           "name": "D2launcher_light.zip",
-          "downloads": 1
+          "downloads": 2
         }
       ]
     },
@@ -78,7 +78,7 @@
   ],
   "daily_downloads": {
     "2025-11-15": {
-      "D2launcher_light.zip": 0,
+      "D2launcher_light.zip": 1,
       "D2launcher_heavy.zip": 0,
       "slasher_mns_2_4_004.7z": 0,
       "D2Slasher2_4_fix2.7z": 0,
