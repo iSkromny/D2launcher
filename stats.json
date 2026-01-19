@@ -1,5 +1,5 @@
 {
-  "updated_at": "2026-01-19T13:06:33Z",
+  "updated_at": "2026-01-19T14:36:02Z",
   "total_releases": 6,
   "total_downloads": 367,
   "releases": [
@@ -80,7 +80,7 @@
     "2026-01-19": {
       "D2launcher_light_1.4.0.1.zip": 0,
       "D2launcher_heavy_1.4.0.1.zip": 0,
-      "slasher_mns_2_4_004.7z": 2,
+      "slasher_mns_2_4_004.7z": 0,
       "D2Slasher2_4_fix2.7z": 0,
       "D2launcher.exe": 0
     }
