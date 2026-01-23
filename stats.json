@@ -1,17 +1,17 @@
 {
-  "updated_at": "2026-01-23T05:36:34Z",
-  "total_releases": 7,
-  "total_downloads": 375,
+  "updated_at": "2026-01-23T06:47:19Z",
+  "total_releases": 6,
+  "total_downloads": 366,
   "releases": [
     {
       "id": 279245029,
       "tag_name": "v1.4.0.3l",
       "created_at": "2026-01-23T04:08:24Z",
-      "downloads": 0,
+      "downloads": 1,
       "assets": [
         {
           "name": "D2launcher_v1.4.0.3l.zip",
-          "downloads": 0
+          "downloads": 1
         }
       ]
     },
@@ -19,11 +19,11 @@
       "id": 279245123,
       "tag_name": "v1.4.0.3h",
       "created_at": "2026-01-23T05:35:16Z",
-      "downloads": 0,
+      "downloads": 1,
       "assets": [
         {
           "name": "D2launcher_v1.4.0.3h.zip",
-          "downloads": 0
+          "downloads": 1
         }
       ]
     },
@@ -48,18 +48,6 @@
         {
           "name": "slasher_mns_2_4_004.7z",
           "downloads": 31
-        }
-      ]
-    },
-    {
-      "id": 258408612,
-      "tag_name": "smns2.4_fix2",
-      "created_at": "2025-10-30T10:28:40Z",
-      "downloads": 11,
-      "assets": [
-        {
-          "name": "D2Slasher2_4_fix2.7z",
-          "downloads": 11
         }
       ]
     },
@@ -90,11 +78,10 @@
   ],
   "daily_downloads": {
     "2026-01-23": {
-      "D2launcher_v1.4.0.3l.zip": 0,
-      "D2launcher_v1.4.0.3h.zip": 0,
+      "D2launcher_v1.4.0.3l.zip": 1,
+      "D2launcher_v1.4.0.3h.zip": 1,
       "D2launcher.zip": 0,
       "slasher_mns_2_4_004.7z": 0,
-      "D2Slasher2_4_fix2.7z": 0,
       "D2launcher.exe": 0
     }
   }
