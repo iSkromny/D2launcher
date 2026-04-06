@@ -1,5 +1,5 @@
 {
-  "updated_at": "2026-04-06T13:38:22Z",
+  "updated_at": "2026-04-06T14:57:01Z",
   "total_releases": 9,
   "total_downloads": 454,
   "releases": [
@@ -115,7 +115,7 @@
   "daily_downloads": {
     "2026-04-06": {
       "D2launcher_v2.0.0.0l.zip": 0,
-      "D2launcher_v2.0.0.0h.zip": 1,
+      "D2launcher_v2.0.0.0h.zip": 0,
       "slasher_mns_2_4.zip": 0,
       "D2launcher_v1.4.0.3l.zip": 0,
       "D2launcher_v1.4.0.3h.zip": 0,
