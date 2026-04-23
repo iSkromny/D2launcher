@@ -1,17 +1,17 @@
 {
-  "updated_at": "2026-04-23T12:03:14Z",
+  "updated_at": "2026-04-23T15:19:00Z",
   "total_releases": 8,
-  "total_downloads": 425,
+  "total_downloads": 426,
   "releases": [
     {
       "id": 305539360,
       "tag_name": "v2.0.0.0l",
       "created_at": "2026-04-06T05:48:28Z",
-      "downloads": 4,
+      "downloads": 5,
       "assets": [
         {
           "name": "D2launcher_v2.0.0.0l.zip",
-          "downloads": 4
+          "downloads": 5
         }
       ]
     },
@@ -102,7 +102,7 @@
   ],
   "daily_downloads": {
     "2026-04-23": {
-      "D2launcher_v2.0.0.0l.zip": 0,
+      "D2launcher_v2.0.0.0l.zip": 1,
       "D2launcher_v2.0.0.0h.zip": 0,
       "slasher_mns_2_4.zip": 0,
       "D2launcher_v1.4.0.3l.zip": 0,
