@@ -1,7 +1,7 @@
 {
-  "updated_at": "2026-06-22T05:17:26Z",
+  "updated_at": "2026-06-22T12:19:21Z",
   "total_releases": 7,
-  "total_downloads": 420,
+  "total_downloads": 422,
   "releases": [
     {
       "id": 305539360,
@@ -31,11 +31,11 @@
       "id": 303119932,
       "tag_name": "smns2.4.004zip",
       "created_at": "2026-03-30T08:24:28Z",
-      "downloads": 30,
+      "downloads": 32,
       "assets": [
         {
           "name": "slasher_mns_2_4.zip",
-          "downloads": 30
+          "downloads": 32
         }
       ]
     },
@@ -92,7 +92,7 @@
     "2026-06-22": {
       "D2launcher_v2.0.0.0l.zip": 0,
       "D2launcher_v2.0.0.0h.zip": 0,
-      "slasher_mns_2_4.zip": 0,
+      "slasher_mns_2_4.zip": 2,
       "D2launcher_v1.4.0.3l.zip": 0,
       "D2launcher_v1.4.0.3h.zip": 0,
       "D2launcher.exe": 0
