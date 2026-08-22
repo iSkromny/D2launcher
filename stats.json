@@ -1,7 +1,7 @@
 {
-  "updated_at": "2026-08-22T06:51:52Z",
+  "updated_at": "2026-08-22T07:37:34Z",
   "total_releases": 7,
-  "total_downloads": 995,
+  "total_downloads": 996,
   "releases": [
     {
       "id": 305539360,
@@ -31,11 +31,11 @@
       "id": 303119932,
       "tag_name": "smns2.4.004zip",
       "created_at": "2026-03-30T08:24:28Z",
-      "downloads": 526,
+      "downloads": 527,
       "assets": [
         {
           "name": "slasher_mns_2_4.zip",
-          "downloads": 526
+          "downloads": 527
         }
       ]
     },
